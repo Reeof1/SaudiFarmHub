@@ -5,10 +5,17 @@
             <span>Farm details</span>
         </div>
         <h1 class="h3 fw-bold text-success mb-1 fh-section-title"><?= e((string)($farm['name'] ?? 'Farm')) ?></h1>
-        <div class="fh-muted mb-0">
+        <div class="fh-muted mb-1">
             <i class="bi bi-geo-alt"></i>
             <?= e((string)($farm['location'] ?? 'Unknown location')) ?>
         </div>
+        <?php if (!empty($farm['latitude']) && !empty($farm['longitude'])): ?>
+            <a href="https://www.google.com/maps?q=<?= e((string)$farm['latitude']) ?>,<?= e((string)$farm['longitude']) ?>"
+               target="_blank" rel="noopener"
+               class="btn btn-sm btn-outline-success">
+                View on Google Maps <i class="bi bi-geo-alt"></i>
+            </a>
+        <?php endif; ?>
     </div>
     <a class="btn btn-outline-success" href="<?= e(base_url('farms')) ?>">
         <i class="bi bi-arrow-left me-2"></i>Back to farms
