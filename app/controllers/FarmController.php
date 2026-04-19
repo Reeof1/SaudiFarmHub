@@ -41,6 +41,12 @@ class FarmController extends BaseController
         $farmIds = array_map(static fn ($f) => (int)$f['id'], $farms);
         $visitCounts = $farmModel->getVisitCountsByFarmIds($farmIds);
 
+        $favoriteFarmIds = [];
+        $user = $this->user();
+        if ($user !== null && ($user['role'] ?? '') === 'visitor' && !empty($farmIds)) {
+            $favoriteFarmIds = $farmModel->getFavoriteFarmIdsForUser((int)$user['id'], $farmIds);
+        }
+
         $this->view('farm/index', [
             'farms' => $farms,
             'page' => $page,
@@ -48,6 +54,7 @@ class FarmController extends BaseController
             'sortedByDistance' => $sortedByDistance,
             'cities' => Cities::LIST,
             'visitCounts' => $visitCounts,
+            'favoriteFarmIds' => $favoriteFarmIds,
         ]);
     }
 
@@ -82,11 +89,17 @@ class FarmController extends BaseController
 
         $gallery = $farmModel->getGalleryImages($farmId);
 
+        $isFavorite = false;
+        if ($user !== null && ($user['role'] ?? '') === 'visitor') {
+            $isFavorite = $farmModel->isFavorite((int)$user['id'], $farmId);
+        }
+
         $this->view('farm/view', [
             'farm' => $farm,
             'activities' => $activities,
             'gallery' => $gallery,
             'visitCount' => $visitCount,
+            'isFavorite' => $isFavorite,
         ]);
     }
 
@@ -131,6 +144,55 @@ class FarmController extends BaseController
         unset($farm);
 
         echo json_encode(['success' => true, 'farms' => $farms, 'page' => $page]);
+    }
+
+    public function toggleFavorite(): void
+    {
+        Security::requireCsrfToken();
+        header('Content-Type: application/json');
+
+        $this->requireRole(['visitor']);
+        $user = $this->user();
+
+        $farmId = (int)($_POST['farm_id'] ?? 0);
+        if ($farmId <= 0) {
+            http_response_code(422);
+            echo json_encode(['success' => false, 'error' => 'farm_id is required.']);
+            return;
+        }
+
+        $farmModel = new Farm();
+        $farm = $farmModel->getById($farmId);
+        if (!$farm) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Farm not found.']);
+            return;
+        }
+
+        $userId = (int)$user['id'];
+        $isFav = $farmModel->isFavorite($userId, $farmId);
+        if ($isFav) {
+            $farmModel->removeFavorite($userId, $farmId);
+            $nowFav = false;
+        } else {
+            $farmModel->addFavorite($userId, $farmId);
+            $nowFav = true;
+        }
+
+        echo json_encode(['success' => true, 'favorited' => $nowFav]);
+    }
+
+    public function favorites(): void
+    {
+        $this->requireRole(['visitor']);
+        $user = $this->user();
+
+        $farmModel = new Farm();
+        $farms = $farmModel->getFavoritesByUser((int)$user['id']);
+
+        $this->view('visitor/favorites', [
+            'farms' => $farms,
+        ]);
     }
 }
 

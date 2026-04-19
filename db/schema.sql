@@ -84,6 +84,27 @@ CREATE INDEX IF NOT EXISTS idx_farms_is_active ON farms(is_active);
 CREATE INDEX IF NOT EXISTS idx_farms_approval_status ON farms(approval_status);
 
 -- ----------------------------
+-- favorites (visitor saves a farm to their favorites list)
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS favorites (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  farm_id INT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_favorite (user_id, farm_id),
+  INDEX idx_favorites_user (user_id),
+  INDEX idx_favorites_farm (farm_id),
+  CONSTRAINT fk_favorites_user
+    FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_favorites_farm
+    FOREIGN KEY (farm_id) REFERENCES farms(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
 -- farm_visits (unique visit counter per registered user per farm)
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS farm_visits (

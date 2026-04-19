@@ -26,6 +26,16 @@
             <span class="badge text-bg-light border fh-muted">
                 <i class="bi bi-eye"></i> <?= (int)($visitCount ?? 0) ?> views
             </span>
+            <?php if (!empty($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'visitor'): ?>
+                <button type="button" id="fh-fav-btn"
+                        class="badge border <?= !empty($isFavorite) ? 'text-bg-danger' : 'text-bg-light fh-muted' ?>"
+                        style="cursor: pointer;"
+                        data-farm-id="<?= (int)$farm['id'] ?>"
+                        data-favorited="<?= !empty($isFavorite) ? '1' : '0' ?>">
+                    <i class="bi <?= !empty($isFavorite) ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
+                    <span class="fh-fav-label"><?= !empty($isFavorite) ? 'Favorited' : 'Add to favorites' ?></span>
+                </button>
+            <?php endif; ?>
         </div>
     </div>
     <a class="btn btn-outline-success" href="<?= e(base_url('farms')) ?>">
@@ -210,6 +220,47 @@
                 setMessage('Network error while loading availability.', true);
             }
         });
+
+        const favBtn = document.getElementById('fh-fav-btn');
+        if (favBtn) {
+            favBtn.addEventListener('click', async () => {
+                const farmId = favBtn.dataset.farmId;
+                const csrfToken = csrfTokenEl.value;
+                favBtn.disabled = true;
+                try {
+                    const res = await fetch('<?= e(base_url('favorite/toggle')) ?>', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams({
+                            csrf_token: csrfToken,
+                            farm_id: farmId,
+                        }),
+                    });
+                    const data = await res.json();
+                    if (!data.success) return;
+
+                    const icon = favBtn.querySelector('i');
+                    const label = favBtn.querySelector('.fh-fav-label');
+                    if (data.favorited) {
+                        favBtn.classList.remove('text-bg-light', 'fh-muted');
+                        favBtn.classList.add('text-bg-danger');
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                        if (label) label.textContent = 'Favorited';
+                    } else {
+                        favBtn.classList.remove('text-bg-danger');
+                        favBtn.classList.add('text-bg-light', 'fh-muted');
+                        icon.classList.remove('bi-heart-fill');
+                        icon.classList.add('bi-heart');
+                        if (label) label.textContent = 'Add to favorites';
+                    }
+                } catch (e) {
+                    // ignore
+                } finally {
+                    favBtn.disabled = false;
+                }
+            });
+        }
 
         bookBtn.addEventListener('click', async () => {
             const scheduleId = scheduleIdEl.value;

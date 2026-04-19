@@ -3,6 +3,7 @@
 /** @var int $unreadNotifications */
 $statusCounts = $statusCounts ?? ['Pending' => 0, 'Approved' => 0, 'Cancelled' => 0, 'Completed' => 0];
 $unreadNotifications = (int)($unreadNotifications ?? 0);
+$favoritesCount = (int)($favoritesCount ?? 0);
 ?>
 
 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
@@ -17,6 +18,9 @@ $unreadNotifications = (int)($unreadNotifications ?? 0);
     <div class="d-flex gap-2 flex-wrap">
         <a class="btn btn-success" href="<?= e(base_url('farms')) ?>"><i class="bi bi-search me-2"></i>Browse farms</a>
         <a class="btn btn-outline-success" href="<?= e(base_url('visitor/bookings')) ?>"><i class="bi bi-calendar2-check me-2"></i>My bookings</a>
+        <a class="btn btn-outline-danger" href="<?= e(base_url('visitor/favorites')) ?>">
+            <i class="bi bi-heart me-2"></i>My favorites
+        </a>
         <a class="btn btn-outline-success" href="<?= e(base_url('notifications')) ?>">
             <i class="bi bi-bell me-2"></i>Notifications
             <?php if ($unreadNotifications > 0): ?>

@@ -211,6 +211,84 @@ class Farm extends BaseModel
         return $result;
     }
 
+    public function addFavorite(int $userId, int $farmId): void
+    {
+        $stmt = $this->db->prepare(
+            'INSERT IGNORE INTO favorites (user_id, farm_id, created_at)
+             VALUES (:user_id, :farm_id, NOW())'
+        );
+        $stmt->execute(['user_id' => $userId, 'farm_id' => $farmId]);
+    }
+
+    public function removeFavorite(int $userId, int $farmId): void
+    {
+        $stmt = $this->db->prepare(
+            'DELETE FROM favorites WHERE user_id = :user_id AND farm_id = :farm_id'
+        );
+        $stmt->execute(['user_id' => $userId, 'farm_id' => $farmId]);
+    }
+
+    public function isFavorite(int $userId, int $farmId): bool
+    {
+        $stmt = $this->db->prepare(
+            'SELECT 1 FROM favorites WHERE user_id = :user_id AND farm_id = :farm_id LIMIT 1'
+        );
+        $stmt->execute(['user_id' => $userId, 'farm_id' => $farmId]);
+        return (bool)$stmt->fetchColumn();
+    }
+
+    public function getFavoritesByUser(int $userId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT f.*, u.name AS owner_name, fav.created_at AS favorited_at
+             FROM favorites fav
+             JOIN farms f ON fav.farm_id = f.id
+             JOIN users u ON f.owner_id = u.id
+             WHERE fav.user_id = :user_id
+               AND f.is_active = 1
+               AND f.approval_status = \'approved\'
+             ORDER BY fav.created_at DESC'
+        );
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countFavoritesByUser(int $userId): int
+    {
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*) AS cnt
+             FROM favorites fav
+             JOIN farms f ON fav.farm_id = f.id
+             WHERE fav.user_id = :user_id
+               AND f.is_active = 1
+               AND f.approval_status = \'approved\''
+        );
+        $stmt->execute(['user_id' => $userId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)($row['cnt'] ?? 0);
+    }
+
+    public function getFavoriteFarmIdsForUser(int $userId, array $farmIds): array
+    {
+        if (empty($farmIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($farmIds), '?'));
+        $sql = 'SELECT farm_id FROM favorites
+                WHERE user_id = ? AND farm_id IN (' . $placeholders . ')';
+
+        $stmt = $this->db->prepare($sql);
+        $params = array_merge([$userId], array_map('intval', $farmIds));
+        $stmt->execute($params);
+
+        $result = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $id) {
+            $result[(int)$id] = true;
+        }
+        return $result;
+    }
+
     public function delete(int $id, int $ownerId): void
     {
         // Soft delete is safer; keep schema compatible with "is_active".

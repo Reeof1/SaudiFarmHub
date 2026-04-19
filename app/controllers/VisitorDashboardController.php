@@ -5,6 +5,7 @@ namespace Controllers;
 
 use Core\BaseController;
 use Models\Booking;
+use Models\Farm;
 use Models\Notification;
 
 class VisitorDashboardController extends BaseController
@@ -15,13 +16,16 @@ class VisitorDashboardController extends BaseController
         $user = $this->user();
         $bookingModel = new Booking();
         $notifModel = new Notification();
+        $farmModel = new Farm();
 
         $statusCounts = $bookingModel->getStatusCountsForVisitor((int)$user['id']);
         $unread = $notifModel->unreadCount((int)$user['id']);
+        $favoritesCount = $farmModel->countFavoritesByUser((int)$user['id']);
 
         $this->view('dashboard/visitor/index', [
             'statusCounts' => $statusCounts,
             'unreadNotifications' => $unread,
+            'favoritesCount' => $favoritesCount,
         ]);
     }
 
