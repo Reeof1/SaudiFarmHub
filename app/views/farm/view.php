@@ -9,7 +9,7 @@
             <i class="bi bi-geo-alt"></i>
             <?= e((string)($farm['city'] ?? 'Unknown city')) ?>
         </div>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
             <?php if (!empty($farm['latitude']) && !empty($farm['longitude'])): ?>
                 <a href="https://www.google.com/maps?q=<?= e((string)$farm['latitude']) ?>,<?= e((string)$farm['longitude']) ?>"
                    target="_blank" rel="noopener"
@@ -23,6 +23,9 @@
                     <i class="bi bi-camera"></i> See All Photos
                 </button>
             <?php endif; ?>
+            <span class="badge text-bg-light border fh-muted">
+                <i class="bi bi-eye"></i> <?= (int)($visitCount ?? 0) ?> views
+            </span>
         </div>
     </div>
     <a class="btn btn-outline-success" href="<?= e(base_url('farms')) ?>">

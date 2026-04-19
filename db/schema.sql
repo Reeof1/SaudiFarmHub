@@ -84,6 +84,26 @@ CREATE INDEX IF NOT EXISTS idx_farms_is_active ON farms(is_active);
 CREATE INDEX IF NOT EXISTS idx_farms_approval_status ON farms(approval_status);
 
 -- ----------------------------
+-- farm_visits (unique visit counter per registered user per farm)
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS farm_visits (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  farm_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_farm_visit (farm_id, user_id),
+  INDEX idx_farm_visits_farm (farm_id),
+  CONSTRAINT fk_farm_visits_farm
+    FOREIGN KEY (farm_id) REFERENCES farms(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_farm_visits_user
+    FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
 -- farm_images (gallery photos, up to 9 per farm; cover photo stays in farms.main_image)
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS farm_images (

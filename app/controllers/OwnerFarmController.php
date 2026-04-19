@@ -23,10 +23,14 @@ class OwnerFarmController extends BaseController
         $total = $farmModel->countByOwnerId($user['id']);
         $totalPages = (int)ceil($total / $perPage);
 
+        $farmIds = array_map(static fn ($f) => (int)$f['id'], $farms);
+        $visitCounts = $farmModel->getVisitCountsByFarmIds($farmIds);
+
         $this->view('owner/farms/index', [
             'farms' => $farms,
             'page' => $page,
             'totalPages' => $totalPages,
+            'visitCounts' => $visitCounts,
         ]);
     }
 

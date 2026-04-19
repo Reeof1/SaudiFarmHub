@@ -172,6 +172,45 @@ class Farm extends BaseModel
         $stmt->execute(['id' => $imageId]);
     }
 
+    public function recordVisit(int $farmId, int $userId): void
+    {
+        $stmt = $this->db->prepare(
+            'INSERT IGNORE INTO farm_visits (farm_id, user_id, created_at)
+             VALUES (:farm_id, :user_id, NOW())'
+        );
+        $stmt->execute(['farm_id' => $farmId, 'user_id' => $userId]);
+    }
+
+    public function countVisits(int $farmId): int
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) AS cnt FROM farm_visits WHERE farm_id = :farm_id');
+        $stmt->execute(['farm_id' => $farmId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)($row['cnt'] ?? 0);
+    }
+
+    public function getVisitCountsByFarmIds(array $farmIds): array
+    {
+        if (empty($farmIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($farmIds), '?'));
+        $sql = 'SELECT farm_id, COUNT(*) AS cnt
+                FROM farm_visits
+                WHERE farm_id IN (' . $placeholders . ')
+                GROUP BY farm_id';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(array_map('intval', $farmIds));
+
+        $result = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $result[(int)$row['farm_id']] = (int)$row['cnt'];
+        }
+        return $result;
+    }
+
     public function delete(int $id, int $ownerId): void
     {
         // Soft delete is safer; keep schema compatible with "is_active".

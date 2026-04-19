@@ -68,6 +68,8 @@
                         <h5 class="card-title text-success"><?= e($farm['name']) ?></h5>
                         <p class="card-text small mb-1">
                             <i class="bi bi-geo-alt"></i> <?= e($farm['city'] ?? 'Unknown city') ?>
+                            <span class="fh-muted">&middot;</span>
+                            <i class="bi bi-eye"></i> <?= (int)($visitCounts[(int)$farm['id']] ?? 0) ?> views
                         </p>
                         <?php if (!empty($sortedByDistance) && isset($farm['distance_km']) && $farm['distance_km'] !== null): ?>
                             <p class="card-text small text-success mb-1">

@@ -38,12 +38,16 @@ class FarmController extends BaseController
         $total = $farmModel->countActive();
         $totalPages = (int)ceil($total / $perPage);
 
+        $farmIds = array_map(static fn ($f) => (int)$f['id'], $farms);
+        $visitCounts = $farmModel->getVisitCountsByFarmIds($farmIds);
+
         $this->view('farm/index', [
             'farms' => $farms,
             'page' => $page,
             'totalPages' => $totalPages,
             'sortedByDistance' => $sortedByDistance,
             'cities' => Cities::LIST,
+            'visitCounts' => $visitCounts,
         ]);
     }
 
@@ -64,6 +68,14 @@ class FarmController extends BaseController
             return;
         }
 
+        // Record a unique visit for logged-in visitors only.
+        $user = $this->user();
+        if ($user !== null && ($user['role'] ?? '') === 'visitor') {
+            $farmModel->recordVisit($farmId, (int)$user['id']);
+        }
+
+        $visitCount = $farmModel->countVisits($farmId);
+
         // Activities for booking
         $activityModel = new \Models\Activity();
         $activities = $activityModel->getActiveByFarmId($farmId);
@@ -74,6 +86,7 @@ class FarmController extends BaseController
             'farm' => $farm,
             'activities' => $activities,
             'gallery' => $gallery,
+            'visitCount' => $visitCount,
         ]);
     }
 
@@ -109,6 +122,13 @@ class FarmController extends BaseController
 
         $farmModel = new Farm();
         $farms = $farmModel->searchFiltered($filters, $perPage, $offset);
+
+        $farmIds = array_map(static fn ($f) => (int)$f['id'], $farms);
+        $visitCounts = $farmModel->getVisitCountsByFarmIds($farmIds);
+        foreach ($farms as &$farm) {
+            $farm['visit_count'] = $visitCounts[(int)$farm['id']] ?? 0;
+        }
+        unset($farm);
 
         echo json_encode(['success' => true, 'farms' => $farms, 'page' => $page]);
     }

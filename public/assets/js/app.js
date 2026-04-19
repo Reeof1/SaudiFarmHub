@@ -86,6 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         loc.className = 'card-text small mb-1 text-muted';
                         loc.innerHTML = '<i class="bi bi-geo-alt"></i> ';
                         loc.appendChild(document.createTextNode(farm.city || 'Unknown city'));
+                        if (farm.visit_count !== undefined) {
+                            const sep = document.createElement('span');
+                            sep.textContent = ' · ';
+                            loc.appendChild(sep);
+                            const eye = document.createElement('i');
+                            eye.className = 'bi bi-eye';
+                            loc.appendChild(eye);
+                            loc.appendChild(document.createTextNode(' ' + farm.visit_count + ' views'));
+                        }
                         body.appendChild(loc);
 
                         const desc = document.createElement('p');
