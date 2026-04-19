@@ -75,8 +75,7 @@
                         <textarea name="description" class="form-control" rows="4" required><?= e($farm['description'] ?? '') ?></textarea>
                     </div>
 
-                    <hr class="my-4">
-                    <h2 class="h6 fw-bold text-success mb-3">Farm Images</h2>
+                    <h2 class="h6 fw-bold text-success mb-3 mt-4">Farm Images</h2>
 
                     <div class="mb-3">
                         <label class="form-label">Cover Photo</label>

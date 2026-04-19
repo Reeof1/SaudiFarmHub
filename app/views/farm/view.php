@@ -1,11 +1,3 @@
-<?php if (!empty($farm['main_image'])): ?>
-    <div class="mb-4">
-        <img src="<?= e(base_url($farm['main_image'])) ?>" alt="<?= e((string)($farm['name'] ?? 'Farm')) ?>"
-             class="w-100 rounded-4"
-             style="max-height: 380px; object-fit: cover; border: 1px solid #dee2e6;">
-    </div>
-<?php endif; ?>
-
 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
     <div>
         <div class="fh-chip d-inline-flex align-items-center gap-2 mb-2">
