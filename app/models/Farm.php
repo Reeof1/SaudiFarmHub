@@ -444,5 +444,94 @@ class Farm extends BaseModel
         );
         $stmt->execute(['status' => $status, 'id' => $farmId]);
     }
+
+    // -------- Reviews --------
+
+    public function addReview(int $userId, int $farmId, int $rating, string $comment): void
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO reviews (user_id, farm_id, rating, comment, created_at)
+             VALUES (:user_id, :farm_id, :rating, :comment, NOW())'
+        );
+        $stmt->execute([
+            'user_id' => $userId,
+            'farm_id' => $farmId,
+            'rating' => $rating,
+            'comment' => $comment,
+        ]);
+    }
+
+    public function deleteReview(int $userId, int $farmId): void
+    {
+        $stmt = $this->db->prepare(
+            'DELETE FROM reviews WHERE user_id = :user_id AND farm_id = :farm_id'
+        );
+        $stmt->execute(['user_id' => $userId, 'farm_id' => $farmId]);
+    }
+
+    public function getUserReview(int $userId, int $farmId): ?array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id, user_id, farm_id, rating, comment, created_at
+             FROM reviews
+             WHERE user_id = :user_id AND farm_id = :farm_id
+             LIMIT 1'
+        );
+        $stmt->execute(['user_id' => $userId, 'farm_id' => $farmId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function getReviewsByFarm(int $farmId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT r.id, r.user_id, r.rating, r.comment, r.created_at,
+                    u.username AS reviewer_name
+             FROM reviews r
+             JOIN users u ON u.id = r.user_id
+             WHERE r.farm_id = :farm_id
+             ORDER BY r.created_at DESC'
+        );
+        $stmt->execute(['farm_id' => $farmId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getRatingSummary(int $farmId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*) AS count, AVG(rating) AS average
+             FROM reviews
+             WHERE farm_id = :farm_id'
+        );
+        $stmt->execute(['farm_id' => $farmId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return [
+            'count' => (int)($row['count'] ?? 0),
+            'average' => $row && $row['average'] !== null ? (float)$row['average'] : 0.0,
+        ];
+    }
+
+    public function getRatingsForFarmIds(array $farmIds): array
+    {
+        if (empty($farmIds)) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($farmIds), '?'));
+        $stmt = $this->db->prepare(
+            "SELECT farm_id, COUNT(*) AS count, AVG(rating) AS average
+             FROM reviews
+             WHERE farm_id IN ($placeholders)
+             GROUP BY farm_id"
+        );
+        $stmt->execute(array_map('intval', $farmIds));
+        $out = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $out[(int)$row['farm_id']] = [
+                'count' => (int)$row['count'],
+                'average' => (float)$row['average'],
+            ];
+        }
+        return $out;
+    }
 }
 

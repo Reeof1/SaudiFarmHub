@@ -19,6 +19,10 @@ $router->post('/search/farms', 'FarmController@search'); // AJAX
 $router->post('/favorite/toggle', 'FarmController@toggleFavorite'); // AJAX
 $router->get('/visitor/favorites', 'FarmController@favorites');
 
+// Reviews (visitor only)
+$router->post('/review/submit', 'FarmController@submitReview');
+$router->post('/review/delete', 'FarmController@deleteReview');
+
 // Auth routes
 $router->get('/login', 'AuthController@showLogin');
 $router->post('/login', 'AuthController@login');

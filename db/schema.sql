@@ -105,6 +105,28 @@ CREATE TABLE IF NOT EXISTS favorites (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
+-- reviews (visitor rating + comment per farm, one per user)
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS reviews (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  farm_id INT UNSIGNED NOT NULL,
+  rating TINYINT UNSIGNED NOT NULL,
+  comment TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_review (user_id, farm_id),
+  INDEX idx_reviews_farm (farm_id),
+  CONSTRAINT fk_reviews_user
+    FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_reviews_farm
+    FOREIGN KEY (farm_id) REFERENCES farms(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
 -- farm_visits (unique visit counter per registered user per farm)
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS farm_visits (

@@ -153,6 +153,136 @@
     </div>
 </div>
 
+<?php
+    $reviews = $reviews ?? [];
+    $ratingSummary = $ratingSummary ?? ['count' => 0, 'average' => 0.0];
+    $userReview = $userReview ?? null;
+    $isVisitor = !empty($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'visitor';
+    $currentUserId = (int)($_SESSION['user']['id'] ?? 0);
+    $reviewError = $_SESSION['review_error'] ?? null;
+    unset($_SESSION['review_error']);
+?>
+<div class="fh-card-soft p-4 mt-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h2 class="h6 fw-bold text-success mb-0">
+            <i class="bi bi-chat-square-text"></i> Reviews &amp; Ratings
+        </h2>
+        <div class="fh-muted small">
+            <?php if ($ratingSummary['count'] > 0): ?>
+                <i class="bi bi-star-fill text-warning"></i>
+                <strong><?= e(number_format((float)$ratingSummary['average'], 1)) ?></strong>
+                out of 5
+                &middot; <?= (int)$ratingSummary['count'] ?> review<?= $ratingSummary['count'] === 1 ? '' : 's' ?>
+            <?php else: ?>
+                No reviews yet
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?php if ($reviewError): ?>
+        <div class="alert alert-danger"><?= e($reviewError) ?></div>
+    <?php endif; ?>
+
+    <?php if ($isVisitor): ?>
+        <?php if ($userReview !== null): ?>
+            <div class="border rounded-4 p-3 mb-4 bg-light">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <div class="small fh-muted mb-1">Your review</div>
+                        <div class="text-warning mb-1">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <i class="bi <?= $i <= (int)$userReview['rating'] ? 'bi-star-fill' : 'bi-star' ?>"></i>
+                            <?php endfor; ?>
+                        </div>
+                        <div class="mb-1"><?= nl2br(e((string)$userReview['comment'])) ?></div>
+                        <div class="small fh-muted">
+                            Submitted <?= e(date('Y-m-d', strtotime((string)$userReview['created_at']))) ?>
+                        </div>
+                    </div>
+                    <form method="POST" action="<?= e(base_url('review/delete')) ?>"
+                          onsubmit="return confirm('Delete your review?');">
+                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="farm_id" value="<?= (int)$farm['id'] ?>">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        <?php else: ?>
+            <form method="POST" action="<?= e(base_url('review/submit')) ?>" class="border rounded-4 p-3 mb-4">
+                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                <input type="hidden" name="farm_id" value="<?= (int)$farm['id'] ?>">
+                <div class="mb-2">
+                    <label class="form-label small fh-muted mb-1">Your rating</label>
+                    <div class="fh-star-picker" id="fh-star-picker">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <i class="bi bi-star fh-star-icon" data-value="<?= $i ?>" style="cursor:pointer; font-size:1.4rem; color:#f5b301;"></i>
+                        <?php endfor; ?>
+                    </div>
+                    <input type="hidden" name="rating" id="fh-rating-input" value="0" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fh-muted mb-1">Your comment</label>
+                    <textarea name="comment" class="form-control" rows="3"
+                              placeholder="Share your experience" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success btn-sm">
+                    <i class="bi bi-send"></i> Submit Review
+                </button>
+            </form>
+            <script>
+                (function () {
+                    const picker = document.getElementById('fh-star-picker');
+                    const input = document.getElementById('fh-rating-input');
+                    if (!picker || !input) return;
+                    const icons = picker.querySelectorAll('.fh-star-icon');
+                    function paint(n) {
+                        icons.forEach(function (ic) {
+                            const v = Number(ic.dataset.value);
+                            ic.classList.toggle('bi-star-fill', v <= n);
+                            ic.classList.toggle('bi-star', v > n);
+                        });
+                    }
+                    icons.forEach(function (ic) {
+                        ic.addEventListener('mouseenter', function () { paint(Number(ic.dataset.value)); });
+                        ic.addEventListener('click', function () {
+                            input.value = String(ic.dataset.value);
+                            paint(Number(ic.dataset.value));
+                        });
+                    });
+                    picker.addEventListener('mouseleave', function () {
+                        paint(Number(input.value || 0));
+                    });
+                })();
+            </script>
+        <?php endif; ?>
+    <?php endif; ?>
+
+    <?php if (!empty($reviews)): ?>
+        <div class="small fh-muted mb-2">All reviews (<?= (int)$ratingSummary['count'] ?>)</div>
+        <?php foreach ($reviews as $rv): ?>
+            <?php if ($userReview !== null && (int)$rv['user_id'] === $currentUserId) continue; ?>
+            <div class="border-top pt-3 mt-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                    <div class="text-warning">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <i class="bi <?= $i <= (int)$rv['rating'] ? 'bi-star-fill' : 'bi-star' ?>"></i>
+                        <?php endfor; ?>
+                        <span class="fh-muted small ms-2">
+                            <?= e((string)($rv['reviewer_name'] ?? 'Visitor')) ?>
+                            &middot; <?= e(date('Y-m-d', strtotime((string)$rv['created_at']))) ?>
+                        </span>
+                    </div>
+                </div>
+                <div><?= nl2br(e((string)$rv['comment'])) ?></div>
+            </div>
+        <?php endforeach; ?>
+    <?php elseif (!$isVisitor || $userReview === null): ?>
+        <div class="fh-muted small">Be the first to review this farm.</div>
+    <?php endif; ?>
+</div>
+
 <script>
     (function () {
         const activitySel = document.getElementById('activity_id');

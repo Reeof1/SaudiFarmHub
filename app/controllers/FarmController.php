@@ -47,6 +47,8 @@ class FarmController extends BaseController
             $favoriteFarmIds = $farmModel->getFavoriteFarmIdsForUser((int)$user['id'], $farmIds);
         }
 
+        $ratings = $farmModel->getRatingsForFarmIds($farmIds);
+
         $this->view('farm/index', [
             'farms' => $farms,
             'page' => $page,
@@ -55,6 +57,7 @@ class FarmController extends BaseController
             'cities' => Cities::LIST,
             'visitCounts' => $visitCounts,
             'favoriteFarmIds' => $favoriteFarmIds,
+            'ratings' => $ratings,
         ]);
     }
 
@@ -90,9 +93,14 @@ class FarmController extends BaseController
         $gallery = $farmModel->getGalleryImages($farmId);
 
         $isFavorite = false;
+        $userReview = null;
         if ($user !== null && ($user['role'] ?? '') === 'visitor') {
             $isFavorite = $farmModel->isFavorite((int)$user['id'], $farmId);
+            $userReview = $farmModel->getUserReview((int)$user['id'], $farmId);
         }
+
+        $reviews = $farmModel->getReviewsByFarm($farmId);
+        $ratingSummary = $farmModel->getRatingSummary($farmId);
 
         $this->view('farm/view', [
             'farm' => $farm,
@@ -100,6 +108,9 @@ class FarmController extends BaseController
             'gallery' => $gallery,
             'visitCount' => $visitCount,
             'isFavorite' => $isFavorite,
+            'reviews' => $reviews,
+            'ratingSummary' => $ratingSummary,
+            'userReview' => $userReview,
         ]);
     }
 
@@ -193,6 +204,60 @@ class FarmController extends BaseController
         $this->view('visitor/favorites', [
             'farms' => $farms,
         ]);
+    }
+
+    public function submitReview(): void
+    {
+        Security::requireCsrfToken();
+        $this->requireRole(['visitor']);
+        $user = $this->user();
+
+        $farmId = (int)($_POST['farm_id'] ?? 0);
+        $rating = (int)($_POST['rating'] ?? 0);
+        $comment = trim((string)($_POST['comment'] ?? ''));
+
+        if ($farmId <= 0 || $rating < 1 || $rating > 5 || $comment === '') {
+            $_SESSION['review_error'] = 'Please provide both a rating (1-5) and a comment.';
+            $this->redirect('farm/view?farm_id=' . $farmId);
+            return;
+        }
+
+        $farmModel = new Farm();
+        $farm = $farmModel->getById($farmId);
+        if (!$farm) {
+            http_response_code(404);
+            echo 'Farm not found.';
+            return;
+        }
+
+        $userId = (int)$user['id'];
+
+        if ($farmModel->getUserReview($userId, $farmId) !== null) {
+            $_SESSION['review_error'] = 'You have already reviewed this farm. Delete your existing review to submit a new one.';
+            $this->redirect('farm/view?farm_id=' . $farmId);
+            return;
+        }
+
+        $farmModel->addReview($userId, $farmId, $rating, $comment);
+        $this->redirect('farm/view?farm_id=' . $farmId);
+    }
+
+    public function deleteReview(): void
+    {
+        Security::requireCsrfToken();
+        $this->requireRole(['visitor']);
+        $user = $this->user();
+
+        $farmId = (int)($_POST['farm_id'] ?? 0);
+        if ($farmId <= 0) {
+            http_response_code(422);
+            echo 'farm_id is required.';
+            return;
+        }
+
+        $farmModel = new Farm();
+        $farmModel->deleteReview((int)$user['id'], $farmId);
+        $this->redirect('farm/view?farm_id=' . $farmId);
     }
 }
 
