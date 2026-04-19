@@ -486,7 +486,7 @@ class Farm extends BaseModel
     {
         $stmt = $this->db->prepare(
             'SELECT r.id, r.user_id, r.rating, r.comment, r.created_at,
-                    u.username AS reviewer_name
+                    u.name AS reviewer_name
              FROM reviews r
              JOIN users u ON u.id = r.user_id
              WHERE r.farm_id = :farm_id
