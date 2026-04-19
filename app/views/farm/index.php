@@ -116,25 +116,38 @@
         sortedByDistance: <?= !empty($sortedByDistance) ? 'true' : 'false' ?>
     };
 
-    // Sort farms by distance on first visit. Once we've asked, remember the choice
-    // for this tab so we don't re-prompt on every page load.
+    // Auto-apply sort by distance whenever the user visits the farm list.
+    // Cache the last known location so we don't re-prompt for GPS every time.
     (function () {
         if (window.FARMHUB.sortedByDistance) return;
         if (!navigator.geolocation) return;
 
-        var asked = sessionStorage.getItem('fh_geo_asked');
-        if (asked) return;
+        var cachedLat = sessionStorage.getItem('fh_geo_lat');
+        var cachedLng = sessionStorage.getItem('fh_geo_lng');
+
+        if (cachedLat && cachedLng) {
+            var url = new URL(window.location.href);
+            url.searchParams.set('user_lat', cachedLat);
+            url.searchParams.set('user_lng', cachedLng);
+            window.location.replace(url.toString());
+            return;
+        }
+
+        if (sessionStorage.getItem('fh_geo_denied')) return;
 
         navigator.geolocation.getCurrentPosition(
             function (pos) {
-                sessionStorage.setItem('fh_geo_asked', '1');
+                var lat = pos.coords.latitude.toFixed(8);
+                var lng = pos.coords.longitude.toFixed(8);
+                sessionStorage.setItem('fh_geo_lat', lat);
+                sessionStorage.setItem('fh_geo_lng', lng);
                 var url = new URL(window.location.href);
-                url.searchParams.set('user_lat', pos.coords.latitude.toFixed(8));
-                url.searchParams.set('user_lng', pos.coords.longitude.toFixed(8));
+                url.searchParams.set('user_lat', lat);
+                url.searchParams.set('user_lng', lng);
                 window.location.replace(url.toString());
             },
             function () {
-                sessionStorage.setItem('fh_geo_asked', '1');
+                sessionStorage.setItem('fh_geo_denied', '1');
             },
             { timeout: 10000 }
         );
