@@ -51,7 +51,8 @@ CREATE TABLE IF NOT EXISTS farms (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   owner_id INT UNSIGNED NOT NULL,
   name VARCHAR(150) NOT NULL,
-  location VARCHAR(150) NOT NULL,
+  -- Administrative region the farm belongs to. Used for "Filter by City".
+  city VARCHAR(50) NULL,
   description TEXT NOT NULL,
   main_image VARCHAR(255) NULL,
   -- Coordinates used for "Sort by Distance" on the visitor farm listing.
@@ -67,10 +68,15 @@ CREATE TABLE IF NOT EXISTS farms (
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- For existing installs, add coordinate columns if they don't already exist.
+-- For existing installs, replace the free-text location column with a city code
+-- and add coordinate columns if they don't already exist.
 ALTER TABLE farms
   ADD COLUMN IF NOT EXISTS latitude DECIMAL(10,8) NULL AFTER main_image,
-  ADD COLUMN IF NOT EXISTS longitude DECIMAL(11,8) NULL AFTER latitude;
+  ADD COLUMN IF NOT EXISTS longitude DECIMAL(11,8) NULL AFTER latitude,
+  ADD COLUMN IF NOT EXISTS city VARCHAR(50) NULL AFTER name,
+  DROP COLUMN IF EXISTS location;
+
+CREATE INDEX IF NOT EXISTS idx_farms_city ON farms(city);
 
 -- Optional indexes
 CREATE INDEX IF NOT EXISTS idx_farms_owner_id ON farms(owner_id);

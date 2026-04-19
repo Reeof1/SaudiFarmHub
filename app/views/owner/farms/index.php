@@ -18,7 +18,7 @@
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title text-success"><?= e($farm['name']) ?></h5>
                         <p class="card-text small fh-muted mb-2">
-                            <i class="bi bi-geo-alt"></i> <?= e($farm['location'] ?? 'No location') ?>
+                            <i class="bi bi-geo-alt"></i> <?= e($farm['city'] ?? 'No city') ?>
                         </p>
                         <p class="card-text small fh-muted flex-grow-1"><?= e(mb_substr($farm['description'] ?? '', 0, 100)) ?>...</p>
                         <div class="d-flex gap-2 flex-wrap">

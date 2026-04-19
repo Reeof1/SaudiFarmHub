@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Controllers;
 
 use Core\BaseController;
+use Core\Cities;
 use Core\Security;
 use Models\Farm;
 
@@ -42,6 +43,7 @@ class FarmController extends BaseController
             'page' => $page,
             'totalPages' => $totalPages,
             'sortedByDistance' => $sortedByDistance,
+            'cities' => Cities::LIST,
         ]);
     }
 
@@ -78,11 +80,16 @@ class FarmController extends BaseController
         header('Content-Type: application/json');
 
         $name = trim((string)($_POST['name'] ?? ''));
-        $location = trim((string)($_POST['location'] ?? ''));
+        $city = trim((string)($_POST['city'] ?? ''));
         $activityType = trim((string)($_POST['activity_type'] ?? ''));
         $availabilityDate = trim((string)($_POST['availability_date'] ?? ''));
         $minPrice = $_POST['min_price'] ?? '';
         $maxPrice = $_POST['max_price'] ?? '';
+
+        // Ignore any city value that isn't in our fixed list.
+        if ($city !== '' && !Cities::isValid($city)) {
+            $city = '';
+        }
 
         $page = max(1, (int)($_POST['page'] ?? 1));
         $perPage = 9;
@@ -90,7 +97,7 @@ class FarmController extends BaseController
 
         $filters = [
             'name' => $name,
-            'location' => $location,
+            'city' => $city,
             'activity_type' => $activityType,
             'availability_date' => $availabilityDate,
             'min_price' => $minPrice,

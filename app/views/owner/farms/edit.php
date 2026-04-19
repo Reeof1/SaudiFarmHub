@@ -29,10 +29,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Location</label>
-                        <input type="text" name="location" class="form-control" required
-                               value="<?= e($farm['location'] ?? '') ?>"
-                               placeholder="e.g. Riyadh - Al Nakheel">
+                        <label class="form-label">City</label>
+                        <select name="city" class="form-select" required>
+                            <option value="">Select a region</option>
+                            <?php foreach (($cities ?? []) as $cityOption): ?>
+                                <option value="<?= e($cityOption) ?>"
+                                    <?= ($farm['city'] ?? '') === $cityOption ? 'selected' : '' ?>>
+                                    <?= e($cityOption) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="mb-3">

@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const farmList = document.getElementById('farm-list');
             const pagination = document.querySelector('.pagination');
             const searchName = document.getElementById('search-name')?.value || '';
-            const searchLocation = document.getElementById('search-location')?.value || '';
+            const searchCity = document.getElementById('search-city')?.value || '';
             const activityType = document.getElementById('search-activity-type')?.value || '';
             const availabilityDate = document.getElementById('search-availability-date')?.value || '';
             const minPrice = document.getElementById('search-min-price')?.value || '';
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = new URLSearchParams({
                 csrf_token: window.FARMHUB?.csrfToken || '',
                 name: searchName,
-                location: searchLocation,
+                city: searchCity,
                 activity_type: activityType,
                 availability_date: availabilityDate,
                 min_price: minPrice,
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const loc = document.createElement('p');
                         loc.className = 'card-text small mb-1 text-muted';
                         loc.innerHTML = '<i class="bi bi-geo-alt"></i> ';
-                        loc.appendChild(document.createTextNode(farm.location || 'Unknown location'));
+                        loc.appendChild(document.createTextNode(farm.city || 'Unknown city'));
                         body.appendChild(loc);
 
                         const desc = document.createElement('p');

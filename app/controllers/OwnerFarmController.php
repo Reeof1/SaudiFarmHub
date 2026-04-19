@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Controllers;
 
 use Core\BaseController;
+use Core\Cities;
 use Core\Security;
 use Models\Farm;
 
@@ -32,7 +33,7 @@ class OwnerFarmController extends BaseController
     public function create(): void
     {
         $this->requireRole(['owner']);
-        $this->view('owner/farms/create');
+        $this->view('owner/farms/create', ['cities' => Cities::LIST]);
     }
 
     public function store(): void
@@ -41,12 +42,15 @@ class OwnerFarmController extends BaseController
         Security::requireCsrfToken();
 
         $name = trim($_POST['name'] ?? '');
-        $location = trim($_POST['location'] ?? '');
+        $city = trim($_POST['city'] ?? '');
         $description = trim($_POST['description'] ?? '');
         [$latitude, $longitude] = $this->parseCoordinates($_POST['latitude'] ?? '', $_POST['longitude'] ?? '');
 
-        if ($name === '' || $location === '' || $description === '') {
-            $this->view('owner/farms/create', ['error' => 'All fields are required.']);
+        if ($name === '' || $description === '' || !Cities::isValid($city)) {
+            $this->view('owner/farms/create', [
+                'error' => 'All fields are required and city must be a valid region.',
+                'cities' => Cities::LIST,
+            ]);
             return;
         }
 
@@ -55,7 +59,7 @@ class OwnerFarmController extends BaseController
         $farmModel->create([
             'owner_id' => (int)$user['id'],
             'name' => $name,
-            'location' => $location,
+            'city' => $city,
             'description' => $description,
             'latitude' => $latitude,
             'longitude' => $longitude,
@@ -78,7 +82,7 @@ class OwnerFarmController extends BaseController
             return;
         }
 
-        $this->view('owner/farms/edit', ['farm' => $farm]);
+        $this->view('owner/farms/edit', ['farm' => $farm, 'cities' => Cities::LIST]);
     }
 
     public function update(): void
@@ -88,12 +92,19 @@ class OwnerFarmController extends BaseController
 
         $id = (int)($_POST['id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
-        $location = trim($_POST['location'] ?? '');
+        $city = trim($_POST['city'] ?? '');
         $description = trim($_POST['description'] ?? '');
         [$latitude, $longitude] = $this->parseCoordinates($_POST['latitude'] ?? '', $_POST['longitude'] ?? '');
 
-        if ($id <= 0 || $name === '' || $location === '' || $description === '') {
-            $this->view('owner/farms/edit', ['error' => 'All fields are required.']);
+        if ($id <= 0 || $name === '' || $description === '' || !Cities::isValid($city)) {
+            $user = $this->user();
+            $farmModel = new Farm();
+            $farm = $farmModel->getByIdForOwner($id, (int)$user['id']) ?? [];
+            $this->view('owner/farms/edit', [
+                'farm' => $farm,
+                'cities' => Cities::LIST,
+                'error' => 'All fields are required and city must be a valid region.',
+            ]);
             return;
         }
 
@@ -101,7 +112,7 @@ class OwnerFarmController extends BaseController
         $farmModel = new Farm();
         $farmModel->update($id, (int)$user['id'], [
             'name' => $name,
-            'location' => $location,
+            'city' => $city,
             'description' => $description,
             'latitude' => $latitude,
             'longitude' => $longitude,

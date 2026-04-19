@@ -39,7 +39,7 @@
                                 <div>
                                     <h5 class="card-title text-success mb-1"><?= e((string)$farm['name']) ?></h5>
                                     <div class="small fh-muted mb-1">
-                                        Owner: <?= e((string)$farm['owner_name']) ?> · Location: <?= e((string)$farm['location']) ?>
+                                        Owner: <?= e((string)$farm['owner_name']) ?> · City: <?= e((string)$farm['city']) ?>
                                     </div>
                                     <p class="card-text small fh-muted mb-0">
                                         <?= e(mb_substr((string)$farm['description'], 0, 160)) ?>...
@@ -76,7 +76,7 @@
                             <div class="list-group-item border-0 rounded-4 mb-2 d-flex justify-content-between align-items-center">
                                 <div>
                                     <span class="fw-semibold text-success"><?= e((string)$farm['name']) ?></span>
-                                    <span class="small fh-muted"> · <?= e((string)$farm['location']) ?></span>
+                                    <span class="small fh-muted"> · <?= e((string)$farm['city']) ?></span>
                                 </div>
                                 <span class="badge text-bg-success">Approved</span>
                             </div>
@@ -96,7 +96,7 @@
                             <div class="list-group-item border-0 rounded-4 mb-2 d-flex justify-content-between align-items-center">
                                 <div>
                                     <span class="fw-semibold text-danger"><?= e((string)$farm['name']) ?></span>
-                                    <span class="small fh-muted"> · <?= e((string)$farm['location']) ?></span>
+                                    <span class="small fh-muted"> · <?= e((string)$farm['city']) ?></span>
                                 </div>
                                 <span class="badge text-bg-danger">Rejected</span>
                             </div>

@@ -23,8 +23,13 @@
             <input type="text" id="search-name" class="form-control" placeholder="e.g. Green Valley">
         </div>
         <div class="col-md-4">
-            <label class="form-label small fh-muted mb-1">Location</label>
-            <input type="text" id="search-location" class="form-control" placeholder="e.g. Countryside">
+            <label class="form-label small fh-muted mb-1">City</label>
+            <select id="search-city" class="form-select">
+                <option value="">All cities</option>
+                <?php foreach (($cities ?? []) as $cityOption): ?>
+                    <option value="<?= e($cityOption) ?>"><?= e($cityOption) ?></option>
+                <?php endforeach; ?>
+            </select>
         </div>
         <div class="col-md-4">
             <label class="form-label small fh-muted mb-1">Activity type</label>
@@ -61,7 +66,7 @@
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title text-success"><?= e($farm['name']) ?></h5>
                         <p class="card-text small mb-1">
-                            <i class="bi bi-geo-alt"></i> <?= e($farm['location'] ?? 'Unknown location') ?>
+                            <i class="bi bi-geo-alt"></i> <?= e($farm['city'] ?? 'Unknown city') ?>
                         </p>
                         <?php if (!empty($sortedByDistance) && isset($farm['distance_km']) && $farm['distance_km'] !== null): ?>
                             <p class="card-text small text-success mb-1">

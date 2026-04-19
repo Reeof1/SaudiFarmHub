@@ -7,7 +7,7 @@
         <h1 class="h3 fw-bold text-success mb-1 fh-section-title"><?= e((string)($farm['name'] ?? 'Farm')) ?></h1>
         <div class="fh-muted mb-1">
             <i class="bi bi-geo-alt"></i>
-            <?= e((string)($farm['location'] ?? 'Unknown location')) ?>
+            <?= e((string)($farm['city'] ?? 'Unknown city')) ?>
         </div>
         <?php if (!empty($farm['latitude']) && !empty($farm['longitude'])): ?>
             <a href="https://www.google.com/maps?q=<?= e((string)$farm['latitude']) ?>,<?= e((string)$farm['longitude']) ?>"

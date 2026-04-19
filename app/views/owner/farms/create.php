@@ -24,9 +24,13 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Location</label>
-                        <input type="text" name="location" class="form-control" required
-                               placeholder="e.g. Riyadh - Al Nakheel">
+                        <label class="form-label">City</label>
+                        <select name="city" class="form-select" required>
+                            <option value="">Select a region</option>
+                            <?php foreach (($cities ?? []) as $cityOption): ?>
+                                <option value="<?= e($cityOption) ?>"><?= e($cityOption) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="mb-3">

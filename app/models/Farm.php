@@ -74,13 +74,13 @@ class Farm extends BaseModel
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO farms (owner_id, name, location, description, latitude, longitude, is_active, created_at)
-             VALUES (:owner_id, :name, :location, :description, :latitude, :longitude, 1, NOW())'
+            'INSERT INTO farms (owner_id, name, city, description, latitude, longitude, is_active, created_at)
+             VALUES (:owner_id, :name, :city, :description, :latitude, :longitude, 1, NOW())'
         );
         $stmt->execute([
             'owner_id' => $data['owner_id'],
             'name' => $data['name'],
-            'location' => $data['location'],
+            'city' => $data['city'],
             'description' => $data['description'],
             'latitude' => $data['latitude'] ?? null,
             'longitude' => $data['longitude'] ?? null,
@@ -92,7 +92,7 @@ class Farm extends BaseModel
     {
         $stmt = $this->db->prepare(
             'UPDATE farms
-             SET name = :name, location = :location, description = :description,
+             SET name = :name, city = :city, description = :description,
                  latitude = :latitude, longitude = :longitude, updated_at = NOW()
              WHERE id = :id AND owner_id = :owner_id'
         );
@@ -100,7 +100,7 @@ class Farm extends BaseModel
             'id' => $id,
             'owner_id' => $ownerId,
             'name' => $data['name'],
-            'location' => $data['location'],
+            'city' => $data['city'],
             'description' => $data['description'],
             'latitude' => $data['latitude'] ?? null,
             'longitude' => $data['longitude'] ?? null,
@@ -139,9 +139,9 @@ class Farm extends BaseModel
             $params['name'] = '%' . $filters['name'] . '%';
         }
 
-        if (!empty($filters['location'])) {
-            $wheres[] = 'f.location LIKE :location';
-            $params['location'] = '%' . $filters['location'] . '%';
+        if (!empty($filters['city'])) {
+            $wheres[] = 'f.city = :city';
+            $params['city'] = $filters['city'];
         }
 
         $hasActivityType = !empty($filters['activity_type']);
