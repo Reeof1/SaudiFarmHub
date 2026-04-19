@@ -1,0 +1,214 @@
+/* FarmHub UI system */
+:root {
+    --fh-radius: 18px;
+    --fh-radius-sm: 14px;
+    --fh-shadow: 0 10px 30px rgba(16, 24, 40, 0.10);
+    --fh-shadow-sm: 0 6px 18px rgba(16, 24, 40, 0.10);
+    --fh-border: rgba(16, 24, 40, 0.10);
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:
+        radial-gradient(900px circle at 10% 10%, rgba(25, 135, 84, 0.10), transparent 45%),
+        radial-gradient(700px circle at 90% 20%, rgba(255, 193, 7, 0.12), transparent 50%),
+        #f7f8fa;
+}
+
+.navbar {
+    backdrop-filter: saturate(140%) blur(10px);
+}
+
+.navbar.bg-success {
+    background: linear-gradient(135deg, #198754 0%, #0f5132 100%) !important;
+}
+
+.navbar .nav-link {
+    opacity: 0.92;
+}
+
+.navbar .nav-link:hover {
+    opacity: 1;
+}
+
+.navbar .badge {
+    border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.navbar-brand {
+    letter-spacing: 0.03em;
+}
+
+.fh-container {
+    max-width: 1180px;
+}
+
+.fh-card {
+    border: 1px solid var(--fh-border) !important;
+    border-radius: var(--fh-radius) !important;
+    box-shadow: var(--fh-shadow-sm);
+}
+
+.fh-card:hover {
+    transform: translateY(-1px);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+    box-shadow: var(--fh-shadow);
+}
+
+.fh-card:not(:hover) {
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.fh-card-soft {
+    border: 1px solid var(--fh-border) !important;
+    border-radius: var(--fh-radius) !important;
+    background: rgba(255, 255, 255, 0.88);
+}
+
+.fh-section-title {
+    letter-spacing: -0.02em;
+}
+
+.fh-muted {
+    color: rgba(33, 37, 41, 0.72) !important;
+}
+
+.fh-chip {
+    border: 1px solid var(--fh-border);
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 999px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.85rem;
+}
+
+.btn {
+    border-radius: 14px;
+}
+
+.btn-lg {
+    border-radius: 16px;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #198754 0%, #157347 100%);
+    border-color: rgba(0,0,0,0.05);
+}
+
+.btn-outline-success:hover {
+    background: linear-gradient(135deg, #198754 0%, #157347 100%);
+    border-color: rgba(0,0,0,0.05);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+    border-color: rgba(0,0,0,0.05);
+}
+
+.btn-outline-light:hover {
+    color: #0f5132;
+}
+
+.form-control, .form-select {
+    border-radius: 14px;
+    border-color: rgba(16, 24, 40, 0.12);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: rgba(25, 135, 84, 0.55);
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.16);
+}
+
+.table {
+    border-color: rgba(16, 24, 40, 0.10);
+}
+
+.table thead th {
+    color: rgba(33, 37, 41, 0.75);
+    font-weight: 600;
+}
+
+.table-responsive {
+    border-radius: var(--fh-radius);
+    border: 1px solid var(--fh-border);
+    background: rgba(255, 255, 255, 0.92);
+    overflow: hidden;
+}
+
+.pagination .page-link {
+    border-radius: 12px;
+}
+
+.fh-hero-img {
+    height: 190px;
+    object-fit: cover;
+    border-top-left-radius: var(--fh-radius);
+    border-top-right-radius: var(--fh-radius);
+}
+
+.card img {
+    object-fit: cover;
+    height: 180px;
+    border-top-left-radius: var(--fh-radius);
+    border-top-right-radius: var(--fh-radius);
+}
+
+.badge {
+    border-radius: 999px;
+}
+
+.home-hero {
+    background: radial-gradient(1000px circle at 10% 10%, rgba(255, 255, 255, 0.20), transparent 45%),
+        radial-gradient(900px circle at 90% 20%, rgba(255, 193, 7, 0.25), transparent 50%),
+        linear-gradient(135deg, #198754 0%, #0f5132 100%);
+}
+
+.text-white-75 {
+    color: rgba(255, 255, 255, 0.80) !important;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+}
+
+.icon-bubble {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.fh-footer {
+    color: rgba(33, 37, 41, 0.65);
+}
+
+.fh-footer a {
+    color: rgba(33, 37, 41, 0.70);
+    text-decoration: none;
+}
+
+.fh-footer a:hover {
+    color: rgba(25, 135, 84, 0.95);
+    text-decoration: underline;
+}
+
+.fh-nav-tabs .nav-link {
+    border-radius: 12px;
+    color: #3d4b57;
+    border: 1px solid transparent;
+}
+
+.fh-nav-tabs .nav-link.active {
+    background: rgba(25, 135, 84, 0.12);
+    color: #146c43;
+    border-color: rgba(25, 135, 84, 0.20);
+    font-weight: 600;
+}
+
