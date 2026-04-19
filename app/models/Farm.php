@@ -74,14 +74,16 @@ class Farm extends BaseModel
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO farms (owner_id, name, location, description, is_active, created_at)
-             VALUES (:owner_id, :name, :location, :description, 1, NOW())'
+            'INSERT INTO farms (owner_id, name, location, description, latitude, longitude, is_active, created_at)
+             VALUES (:owner_id, :name, :location, :description, :latitude, :longitude, 1, NOW())'
         );
         $stmt->execute([
             'owner_id' => $data['owner_id'],
             'name' => $data['name'],
             'location' => $data['location'],
             'description' => $data['description'],
+            'latitude' => $data['latitude'] ?? null,
+            'longitude' => $data['longitude'] ?? null,
         ]);
         return (int)$this->db->lastInsertId();
     }
@@ -89,8 +91,9 @@ class Farm extends BaseModel
     public function update(int $id, int $ownerId, array $data): void
     {
         $stmt = $this->db->prepare(
-            'UPDATE farms 
-             SET name = :name, location = :location, description = :description, updated_at = NOW()
+            'UPDATE farms
+             SET name = :name, location = :location, description = :description,
+                 latitude = :latitude, longitude = :longitude, updated_at = NOW()
              WHERE id = :id AND owner_id = :owner_id'
         );
         $stmt->execute([
@@ -99,6 +102,8 @@ class Farm extends BaseModel
             'name' => $data['name'],
             'location' => $data['location'],
             'description' => $data['description'],
+            'latitude' => $data['latitude'] ?? null,
+            'longitude' => $data['longitude'] ?? null,
         ]);
     }
 
@@ -196,6 +201,42 @@ class Farm extends BaseModel
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getPaginatedSortedByDistance(float $lat, float $lng, int $limit, int $offset): array
+    {
+        // Haversine formula: distance in kilometers between two lat/lng points.
+        // Farms without coordinates are placed last (NULL -> very large distance).
+        $sql = 'SELECT f.*, u.name AS owner_name,
+                (
+                    CASE
+                        WHEN f.latitude IS NULL OR f.longitude IS NULL THEN NULL
+                        ELSE (
+                            6371 * ACOS(
+                                LEAST(1, GREATEST(-1,
+                                    COS(RADIANS(:lat1)) * COS(RADIANS(f.latitude))
+                                    * COS(RADIANS(f.longitude) - RADIANS(:lng1))
+                                    + SIN(RADIANS(:lat2)) * SIN(RADIANS(f.latitude))
+                                ))
+                            )
+                        )
+                    END
+                ) AS distance_km
+                FROM farms f
+                JOIN users u ON f.owner_id = u.id
+                WHERE f.is_active = 1 AND f.approval_status = \'approved\'
+                ORDER BY (distance_km IS NULL), distance_km ASC, f.created_at DESC
+                LIMIT :limit OFFSET :offset';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':lat1', $lat);
+        $stmt->bindValue(':lng1', $lng);
+        $stmt->bindValue(':lat2', $lat);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

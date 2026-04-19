@@ -9,6 +9,13 @@
     </div>
 </div>
 
+<?php if (!empty($sortedByDistance)): ?>
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-4" role="status">
+        <i class="bi bi-geo-alt-fill"></i>
+        <span>Showing farms sorted by distance from your location.</span>
+    </div>
+<?php endif; ?>
+
 <div class="fh-card-soft p-3 p-lg-4 mb-4">
     <div class="row g-3">
         <div class="col-md-4">
@@ -56,6 +63,12 @@
                         <p class="card-text small mb-1">
                             <i class="bi bi-geo-alt"></i> <?= e($farm['location'] ?? 'Unknown location') ?>
                         </p>
+                        <?php if (!empty($sortedByDistance) && isset($farm['distance_km']) && $farm['distance_km'] !== null): ?>
+                            <p class="card-text small text-success mb-1">
+                                <i class="bi bi-signpost-2"></i>
+                                <?= e(number_format((float)$farm['distance_km'], 1)) ?> km away
+                            </p>
+                        <?php endif; ?>
                         <p class="card-text small fh-muted flex-grow-1">
                             <?= e(mb_substr($farm['description'] ?? '', 0, 120)) ?>...
                         </p>
@@ -91,7 +104,31 @@
     window.FARMHUB = {
         baseUrl: <?= json_encode(base_url()) ?>,
         searchUrl: <?= json_encode(base_url('search/farms')) ?>,
-        csrfToken: <?= json_encode(csrf_token()) ?>
+        csrfToken: <?= json_encode(csrf_token()) ?>,
+        sortedByDistance: <?= !empty($sortedByDistance) ? 'true' : 'false' ?>
     };
-</script>
 
+    // Sort farms by distance on first visit. Once we've asked, remember the choice
+    // for this tab so we don't re-prompt on every page load.
+    (function () {
+        if (window.FARMHUB.sortedByDistance) return;
+        if (!navigator.geolocation) return;
+
+        var asked = sessionStorage.getItem('fh_geo_asked');
+        if (asked) return;
+
+        navigator.geolocation.getCurrentPosition(
+            function (pos) {
+                sessionStorage.setItem('fh_geo_asked', '1');
+                var url = new URL(window.location.href);
+                url.searchParams.set('user_lat', pos.coords.latitude.toFixed(8));
+                url.searchParams.set('user_lng', pos.coords.longitude.toFixed(8));
+                window.location.replace(url.toString());
+            },
+            function () {
+                sessionStorage.setItem('fh_geo_asked', '1');
+            },
+            { timeout: 10000 }
+        );
+    })();
+</script>

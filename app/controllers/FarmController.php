@@ -16,7 +16,24 @@ class FarmController extends BaseController
         $offset = ($page - 1) * $perPage;
 
         $farmModel = new Farm();
-        $farms = $farmModel->getPaginated($perPage, $offset);
+
+        $userLat = $_GET['user_lat'] ?? null;
+        $userLng = $_GET['user_lng'] ?? null;
+        $sortedByDistance = false;
+
+        if (is_numeric($userLat) && is_numeric($userLng)) {
+            $lat = (float)$userLat;
+            $lng = (float)$userLng;
+            if ($lat >= -90 && $lat <= 90 && $lng >= -180 && $lng <= 180) {
+                $farms = $farmModel->getPaginatedSortedByDistance($lat, $lng, $perPage, $offset);
+                $sortedByDistance = true;
+            } else {
+                $farms = $farmModel->getPaginated($perPage, $offset);
+            }
+        } else {
+            $farms = $farmModel->getPaginated($perPage, $offset);
+        }
+
         $total = $farmModel->countActive();
         $totalPages = (int)ceil($total / $perPage);
 
@@ -24,6 +41,7 @@ class FarmController extends BaseController
             'farms' => $farms,
             'page' => $page,
             'totalPages' => $totalPages,
+            'sortedByDistance' => $sortedByDistance,
         ]);
     }
 

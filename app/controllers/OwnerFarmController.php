@@ -43,6 +43,7 @@ class OwnerFarmController extends BaseController
         $name = trim($_POST['name'] ?? '');
         $location = trim($_POST['location'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        [$latitude, $longitude] = $this->parseCoordinates($_POST['latitude'] ?? '', $_POST['longitude'] ?? '');
 
         if ($name === '' || $location === '' || $description === '') {
             $this->view('owner/farms/create', ['error' => 'All fields are required.']);
@@ -56,6 +57,8 @@ class OwnerFarmController extends BaseController
             'name' => $name,
             'location' => $location,
             'description' => $description,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
         ]);
 
         $this->redirect('owner/farms');
@@ -87,6 +90,7 @@ class OwnerFarmController extends BaseController
         $name = trim($_POST['name'] ?? '');
         $location = trim($_POST['location'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        [$latitude, $longitude] = $this->parseCoordinates($_POST['latitude'] ?? '', $_POST['longitude'] ?? '');
 
         if ($id <= 0 || $name === '' || $location === '' || $description === '') {
             $this->view('owner/farms/edit', ['error' => 'All fields are required.']);
@@ -99,9 +103,30 @@ class OwnerFarmController extends BaseController
             'name' => $name,
             'location' => $location,
             'description' => $description,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
         ]);
 
         $this->redirect('owner/farms');
+    }
+
+    private function parseCoordinates(mixed $latRaw, mixed $lngRaw): array
+    {
+        $lat = is_string($latRaw) ? trim($latRaw) : '';
+        $lng = is_string($lngRaw) ? trim($lngRaw) : '';
+
+        if ($lat === '' || $lng === '' || !is_numeric($lat) || !is_numeric($lng)) {
+            return [null, null];
+        }
+
+        $lat = (float)$lat;
+        $lng = (float)$lng;
+
+        if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+            return [null, null];
+        }
+
+        return [$lat, $lng];
     }
 
     public function delete(): void
