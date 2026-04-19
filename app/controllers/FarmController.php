@@ -68,9 +68,12 @@ class FarmController extends BaseController
         $activityModel = new \Models\Activity();
         $activities = $activityModel->getActiveByFarmId($farmId);
 
+        $gallery = $farmModel->getGalleryImages($farmId);
+
         $this->view('farm/view', [
             'farm' => $farm,
             'activities' => $activities,
+            'gallery' => $gallery,
         ]);
     }
 

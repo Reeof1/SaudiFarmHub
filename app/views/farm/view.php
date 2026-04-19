@@ -1,3 +1,11 @@
+<?php if (!empty($farm['main_image'])): ?>
+    <div class="mb-4">
+        <img src="<?= e(base_url($farm['main_image'])) ?>" alt="<?= e((string)($farm['name'] ?? 'Farm')) ?>"
+             class="w-100 rounded-4"
+             style="max-height: 380px; object-fit: cover; border: 1px solid #dee2e6;">
+    </div>
+<?php endif; ?>
+
 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
     <div>
         <div class="fh-chip d-inline-flex align-items-center gap-2 mb-2">
@@ -5,22 +13,78 @@
             <span>Farm details</span>
         </div>
         <h1 class="h3 fw-bold text-success mb-1 fh-section-title"><?= e((string)($farm['name'] ?? 'Farm')) ?></h1>
-        <div class="fh-muted mb-1">
+        <div class="fh-muted mb-2">
             <i class="bi bi-geo-alt"></i>
             <?= e((string)($farm['city'] ?? 'Unknown city')) ?>
         </div>
-        <?php if (!empty($farm['latitude']) && !empty($farm['longitude'])): ?>
-            <a href="https://www.google.com/maps?q=<?= e((string)$farm['latitude']) ?>,<?= e((string)$farm['longitude']) ?>"
-               target="_blank" rel="noopener"
-               class="btn btn-sm btn-outline-success">
-                View on Google Maps <i class="bi bi-geo-alt"></i>
-            </a>
-        <?php endif; ?>
+        <div class="d-flex flex-wrap gap-2">
+            <?php if (!empty($farm['latitude']) && !empty($farm['longitude'])): ?>
+                <a href="https://www.google.com/maps?q=<?= e((string)$farm['latitude']) ?>,<?= e((string)$farm['longitude']) ?>"
+                   target="_blank" rel="noopener"
+                   class="btn btn-sm btn-outline-success">
+                    View on Google Maps <i class="bi bi-geo-alt"></i>
+                </a>
+            <?php endif; ?>
+            <?php if (!empty($gallery)): ?>
+                <button type="button" class="btn btn-sm btn-outline-success"
+                        data-bs-toggle="modal" data-bs-target="#galleryModal">
+                    <i class="bi bi-camera"></i> See All Photos
+                </button>
+            <?php endif; ?>
+        </div>
     </div>
     <a class="btn btn-outline-success" href="<?= e(base_url('farms')) ?>">
         <i class="bi bi-arrow-left me-2"></i>Back to farms
     </a>
 </div>
+
+<?php if (!empty($gallery)): ?>
+    <div class="modal fade" id="galleryModal" tabindex="-1" aria-labelledby="galleryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="galleryModalLabel">
+                        <?= e((string)($farm['name'] ?? 'Farm')) ?> &mdash; Photos
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="farmGalleryCarousel" class="carousel slide" data-bs-ride="false">
+                        <div class="carousel-indicators">
+                            <?php foreach ($gallery as $i => $img): ?>
+                                <button type="button" data-bs-target="#farmGalleryCarousel"
+                                        data-bs-slide-to="<?= (int)$i ?>"
+                                        class="<?= $i === 0 ? 'active' : '' ?>"
+                                        aria-label="Slide <?= (int)$i + 1 ?>"></button>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="carousel-inner">
+                            <?php foreach ($gallery as $i => $img): ?>
+                                <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
+                                    <img src="<?= e(base_url($img['image_path'])) ?>"
+                                         class="d-block w-100" alt="Farm photo <?= (int)$i + 1 ?>"
+                                         style="max-height: 500px; object-fit: contain; background: #000;">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php if (count($gallery) > 1): ?>
+                            <button class="carousel-control-prev" type="button"
+                                    data-bs-target="#farmGalleryCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button"
+                                    data-bs-target="#farmGalleryCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 
 <div class="row g-3">
     <div class="col-lg-4">

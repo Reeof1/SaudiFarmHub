@@ -84,6 +84,21 @@ CREATE INDEX IF NOT EXISTS idx_farms_is_active ON farms(is_active);
 CREATE INDEX IF NOT EXISTS idx_farms_approval_status ON farms(approval_status);
 
 -- ----------------------------
+-- farm_images (gallery photos, up to 9 per farm; cover photo stays in farms.main_image)
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS farm_images (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  farm_id INT UNSIGNED NOT NULL,
+  image_path VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_farm_images_farm (farm_id),
+  CONSTRAINT fk_farm_images_farm
+    FOREIGN KEY (farm_id) REFERENCES farms(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
 -- activities
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS activities (

@@ -61,8 +61,9 @@
         <?php foreach ($farms as $farm): ?>
             <div class="col-md-4">
                 <div class="card fh-card h-100">
-                    <img src="<?= e($farm['main_image'] ?? base_url('assets/img/farm-placeholder.jpg')) ?>"
-                         class="card-img-top" alt="Farm image">
+                    <img src="<?= e(!empty($farm['main_image']) ? base_url($farm['main_image']) : base_url('assets/img/farm-placeholder.jpg')) ?>"
+                         class="card-img-top" alt="Farm image"
+                         style="height: 200px; object-fit: cover;">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title text-success"><?= e($farm['name']) ?></h5>
                         <p class="card-text small mb-1">

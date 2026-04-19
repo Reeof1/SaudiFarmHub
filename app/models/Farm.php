@@ -74,14 +74,15 @@ class Farm extends BaseModel
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO farms (owner_id, name, city, description, latitude, longitude, is_active, created_at)
-             VALUES (:owner_id, :name, :city, :description, :latitude, :longitude, 1, NOW())'
+            'INSERT INTO farms (owner_id, name, city, description, main_image, latitude, longitude, is_active, created_at)
+             VALUES (:owner_id, :name, :city, :description, :main_image, :latitude, :longitude, 1, NOW())'
         );
         $stmt->execute([
             'owner_id' => $data['owner_id'],
             'name' => $data['name'],
             'city' => $data['city'],
             'description' => $data['description'],
+            'main_image' => $data['main_image'] ?? null,
             'latitude' => $data['latitude'] ?? null,
             'longitude' => $data['longitude'] ?? null,
         ]);
@@ -90,13 +91,15 @@ class Farm extends BaseModel
 
     public function update(int $id, int $ownerId, array $data): void
     {
-        $stmt = $this->db->prepare(
-            'UPDATE farms
-             SET name = :name, city = :city, description = :description,
-                 latitude = :latitude, longitude = :longitude, updated_at = NOW()
-             WHERE id = :id AND owner_id = :owner_id'
-        );
-        $stmt->execute([
+        $fields = [
+            'name = :name',
+            'city = :city',
+            'description = :description',
+            'latitude = :latitude',
+            'longitude = :longitude',
+            'updated_at = NOW()',
+        ];
+        $params = [
             'id' => $id,
             'owner_id' => $ownerId,
             'name' => $data['name'],
@@ -104,7 +107,69 @@ class Farm extends BaseModel
             'description' => $data['description'],
             'latitude' => $data['latitude'] ?? null,
             'longitude' => $data['longitude'] ?? null,
+        ];
+
+        if (array_key_exists('main_image', $data)) {
+            $fields[] = 'main_image = :main_image';
+            $params['main_image'] = $data['main_image'];
+        }
+
+        $sql = 'UPDATE farms SET ' . implode(', ', $fields) . ' WHERE id = :id AND owner_id = :owner_id';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+    }
+
+    public function getGalleryImages(int $farmId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id, image_path, created_at
+             FROM farm_images
+             WHERE farm_id = :farm_id
+             ORDER BY created_at ASC'
+        );
+        $stmt->execute(['farm_id' => $farmId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countGalleryImages(int $farmId): int
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) AS cnt FROM farm_images WHERE farm_id = :farm_id');
+        $stmt->execute(['farm_id' => $farmId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)($row['cnt'] ?? 0);
+    }
+
+    public function addGalleryImage(int $farmId, string $imagePath): int
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO farm_images (farm_id, image_path, created_at)
+             VALUES (:farm_id, :image_path, NOW())'
+        );
+        $stmt->execute([
+            'farm_id' => $farmId,
+            'image_path' => $imagePath,
         ]);
+        return (int)$this->db->lastInsertId();
+    }
+
+    public function getGalleryImageForOwner(int $imageId, int $ownerId): ?array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT fi.id, fi.farm_id, fi.image_path
+             FROM farm_images fi
+             JOIN farms f ON fi.farm_id = f.id
+             WHERE fi.id = :id AND f.owner_id = :owner_id
+             LIMIT 1'
+        );
+        $stmt->execute(['id' => $imageId, 'owner_id' => $ownerId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function deleteGalleryImage(int $imageId): void
+    {
+        $stmt = $this->db->prepare('DELETE FROM farm_images WHERE id = :id');
+        $stmt->execute(['id' => $imageId]);
     }
 
     public function delete(int $id, int $ownerId): void

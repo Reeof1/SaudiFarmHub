@@ -44,6 +44,7 @@ $router->post('/owner/farm/store', 'OwnerFarmController@store');
 $router->get('/owner/farm/edit', 'OwnerFarmController@edit');
 $router->post('/owner/farm/update', 'OwnerFarmController@update');
 $router->post('/owner/farm/delete', 'OwnerFarmController@delete');
+$router->post('/owner/farm/image/delete', 'OwnerFarmController@deleteImage');
 
 // Owner activities & schedules
 $router->get('/owner/farm/activities', 'OwnerActivityController@index');

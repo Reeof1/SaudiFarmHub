@@ -15,7 +15,7 @@
 
         <div class="fh-card-soft p-4">
             <div class="card-body">
-                <form method="post" action="<?= e(base_url('owner/farm/store')) ?>">
+                <form method="post" action="<?= e(base_url('owner/farm/store')) ?>" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
 
                     <div class="mb-3">
@@ -58,6 +58,30 @@
                     <div class="mb-3">
                         <label class="form-label">Description</label>
                         <textarea name="description" class="form-control" rows="4" required></textarea>
+                    </div>
+
+                    <hr class="my-4">
+                    <h2 class="h6 fw-bold text-success mb-3">Farm Images</h2>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cover Photo</label>
+                        <input type="file" name="cover_photo" id="cover_photo"
+                               class="form-control" accept="image/jpeg,image/png,image/webp">
+                        <div class="mt-2" id="cover-preview-wrap" style="display:none;">
+                            <img id="cover-preview" alt="Cover preview"
+                                 style="max-width: 220px; border-radius: 8px; border: 1px solid #dee2e6;">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Gallery Photos (up to 9)</label>
+                        <input type="file" name="gallery_photos[]" id="gallery_photos"
+                               class="form-control" multiple accept="image/jpeg,image/png,image/webp">
+                        <div class="d-flex flex-wrap gap-2 mt-2" id="gallery-preview"></div>
+                    </div>
+
+                    <div class="small fh-muted mb-4">
+                        Allowed: JPG, PNG, WebP &mdash; max 5MB each
                     </div>
 
                     <div class="d-flex gap-2">
@@ -121,6 +145,43 @@
                     coordsDisplay.textContent = 'Could not get your location. Please click the map instead.';
                 }
             );
+        });
+
+        var coverInput = document.getElementById('cover_photo');
+        var coverPreview = document.getElementById('cover-preview');
+        var coverPreviewWrap = document.getElementById('cover-preview-wrap');
+        coverInput.addEventListener('change', function () {
+            var file = coverInput.files[0];
+            if (!file) {
+                coverPreviewWrap.style.display = 'none';
+                return;
+            }
+            coverPreview.src = URL.createObjectURL(file);
+            coverPreviewWrap.style.display = 'block';
+        });
+
+        var galleryInput = document.getElementById('gallery_photos');
+        var galleryPreview = document.getElementById('gallery-preview');
+        galleryInput.addEventListener('change', function () {
+            galleryPreview.innerHTML = '';
+            var files = Array.from(galleryInput.files).slice(0, 9);
+            files.forEach(function (file) {
+                var img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.alt = 'Gallery preview';
+                img.style.width = '90px';
+                img.style.height = '90px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '6px';
+                img.style.border = '1px solid #dee2e6';
+                galleryPreview.appendChild(img);
+            });
+            if (galleryInput.files.length > 9) {
+                var note = document.createElement('div');
+                note.className = 'small text-danger w-100';
+                note.textContent = 'Only the first 9 images will be uploaded.';
+                galleryPreview.appendChild(note);
+            }
         });
     })();
 </script>

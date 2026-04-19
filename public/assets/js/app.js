@@ -63,7 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         const img = document.createElement('img');
                         img.className = 'card-img-top';
                         img.alt = 'Farm image';
-                        img.src = farm.main_image || `${window.FARMHUB?.baseUrl || ''}/assets/img/farm-placeholder.jpg`;
+                        img.style.height = '200px';
+                        img.style.objectFit = 'cover';
+                        const base = window.FARMHUB?.baseUrl || '';
+                        img.src = farm.main_image
+                            ? `${base}/${farm.main_image}`
+                            : `${base}/assets/img/farm-placeholder.jpg`;
                         img.onerror = () => {
                             img.style.display = 'none';
                         };

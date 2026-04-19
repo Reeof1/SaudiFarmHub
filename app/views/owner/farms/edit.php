@@ -19,7 +19,7 @@
 
         <div class="fh-card-soft p-4">
             <div class="card-body">
-                <form method="post" action="<?= e(base_url('owner/farm/update')) ?>">
+                <form method="post" action="<?= e(base_url('owner/farm/update')) ?>" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                     <input type="hidden" name="id" value="<?= e((string)$farm['id']) ?>">
 
@@ -73,6 +73,64 @@
                     <div class="mb-3">
                         <label class="form-label">Description</label>
                         <textarea name="description" class="form-control" rows="4" required><?= e($farm['description'] ?? '') ?></textarea>
+                    </div>
+
+                    <hr class="my-4">
+                    <h2 class="h6 fw-bold text-success mb-3">Farm Images</h2>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cover Photo</label>
+                        <?php if (!empty($farm['main_image'])): ?>
+                            <div class="mb-2">
+                                <img src="<?= e(base_url($farm['main_image'])) ?>" alt="Current cover"
+                                     style="max-width: 220px; border-radius: 8px; border: 1px solid #dee2e6;">
+                                <div class="small fh-muted mt-1">Current cover photo</div>
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" name="cover_photo" id="cover_photo"
+                               class="form-control" accept="image/jpeg,image/png,image/webp">
+                        <div class="small fh-muted mt-1">Upload a new file to replace the current cover.</div>
+                        <div class="mt-2" id="cover-preview-wrap" style="display:none;">
+                            <img id="cover-preview" alt="New cover preview"
+                                 style="max-width: 220px; border-radius: 8px; border: 1px solid #dee2e6;">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Gallery Photos (up to 9)</label>
+
+                        <?php if (!empty($gallery)): ?>
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                <?php foreach ($gallery as $img): ?>
+                                    <div class="position-relative">
+                                        <img src="<?= e(base_url($img['image_path'])) ?>" alt="Gallery image"
+                                             style="width: 90px; height: 90px; object-fit: cover; border-radius: 6px; border: 1px solid #dee2e6;">
+                                        <form method="post" action="<?= e(base_url('owner/farm/image/delete')) ?>"
+                                              class="position-absolute top-0 end-0"
+                                              onsubmit="return confirm('Delete this image?');">
+                                            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                                            <input type="hidden" name="image_id" value="<?= e((string)$img['id']) ?>">
+                                            <input type="hidden" name="farm_id" value="<?= e((string)$farm['id']) ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm p-1 lh-1"
+                                                    style="border-radius: 50%;" aria-label="Delete image">
+                                                <i class="bi bi-x"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <div class="small fh-muted mb-2">
+                                <?= (int)count($gallery) ?> of 9 photos used.
+                            </div>
+                        <?php endif; ?>
+
+                        <input type="file" name="gallery_photos[]" id="gallery_photos"
+                               class="form-control" multiple accept="image/jpeg,image/png,image/webp">
+                        <div class="d-flex flex-wrap gap-2 mt-2" id="gallery-preview"></div>
+                    </div>
+
+                    <div class="small fh-muted mb-4">
+                        Allowed: JPG, PNG, WebP &mdash; max 5MB each
                     </div>
 
                     <div class="d-flex gap-2">
@@ -144,6 +202,37 @@
                     coordsDisplay.textContent = 'Could not get your location. Please click the map instead.';
                 }
             );
+        });
+
+        var coverInput = document.getElementById('cover_photo');
+        var coverPreview = document.getElementById('cover-preview');
+        var coverPreviewWrap = document.getElementById('cover-preview-wrap');
+        coverInput.addEventListener('change', function () {
+            var file = coverInput.files[0];
+            if (!file) {
+                coverPreviewWrap.style.display = 'none';
+                return;
+            }
+            coverPreview.src = URL.createObjectURL(file);
+            coverPreviewWrap.style.display = 'block';
+        });
+
+        var galleryInput = document.getElementById('gallery_photos');
+        var galleryPreview = document.getElementById('gallery-preview');
+        galleryInput.addEventListener('change', function () {
+            galleryPreview.innerHTML = '';
+            var files = Array.from(galleryInput.files).slice(0, 9);
+            files.forEach(function (file) {
+                var img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.alt = 'Gallery preview';
+                img.style.width = '90px';
+                img.style.height = '90px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '6px';
+                img.style.border = '1px solid #dee2e6';
+                galleryPreview.appendChild(img);
+            });
         });
     })();
 </script>
