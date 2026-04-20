@@ -459,6 +459,14 @@ class Farm extends BaseModel
             'rating' => $rating,
             'comment' => $comment,
         ]);
+
+        $ownerStmt = $this->db->prepare('SELECT owner_id FROM farms WHERE id = :id');
+        $ownerStmt->execute(['id' => $farmId]);
+        $ownerId = (int)($ownerStmt->fetchColumn() ?: 0);
+        if ($ownerId > 0) {
+            $notif = new Notification();
+            $notif->create($ownerId, 'review_new', 'You have a new review on your farm.');
+        }
     }
 
     public function deleteReview(int $userId, int $farmId): void
@@ -513,7 +521,18 @@ class Farm extends BaseModel
             'farm_id'   => $farmId,
             'owner_id'  => $ownerId,
         ]);
-        return $stmt->rowCount() > 0;
+        if ($stmt->rowCount() === 0) {
+            return false;
+        }
+
+        $visitorStmt = $this->db->prepare('SELECT user_id FROM reviews WHERE id = :id');
+        $visitorStmt->execute(['id' => $reviewId]);
+        $visitorId = (int)($visitorStmt->fetchColumn() ?: 0);
+        if ($visitorId > 0) {
+            $notif = new Notification();
+            $notif->create($visitorId, 'review_reply', 'You received a reply to your review.');
+        }
+        return true;
     }
 
     public function deleteOwnerReply(int $farmId, int $reviewId, int $ownerId): bool

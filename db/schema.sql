@@ -298,7 +298,7 @@ ON DUPLICATE KEY UPDATE
 CREATE TABLE IF NOT EXISTS notifications (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id INT UNSIGNED NOT NULL,
-  type ENUM('booking','reminder','owner_alert','system') NOT NULL DEFAULT 'booking',
+  type ENUM('booking','reminder','owner_alert','system','review_new','review_reply') NOT NULL DEFAULT 'booking',
   message TEXT NOT NULL,
   is_read TINYINT(1) NOT NULL DEFAULT 0,
   read_at TIMESTAMP NULL DEFAULT NULL,
