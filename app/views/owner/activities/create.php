@@ -27,7 +27,12 @@
 
                     <div class="mb-3">
                         <label class="form-label">Activity Type</label>
-                        <input type="text" name="activity_type" class="form-control" placeholder="e.g. Farm tour, Harvesting, Workshop" required>
+                        <select name="activity_type" class="form-select" required>
+                            <option value="">-- Select activity type --</option>
+                            <?php foreach (\Core\ActivityTypes::LIST as $typeOption): ?>
+                                <option value="<?= e($typeOption) ?>"><?= e($typeOption) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="mb-3">

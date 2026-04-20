@@ -28,8 +28,21 @@
 
                     <div class="mb-3">
                         <label class="form-label">Activity Type</label>
-                        <input type="text" name="activity_type" class="form-control" required
-                               value="<?= e((string)$activity['activity_type']) ?>">
+                        <?php $currentType = (string)$activity['activity_type']; ?>
+                        <select name="activity_type" class="form-select" required>
+                            <option value="">-- Select activity type --</option>
+                            <?php foreach (\Core\ActivityTypes::LIST as $typeOption): ?>
+                                <option value="<?= e($typeOption) ?>"
+                                    <?= $typeOption === $currentType ? 'selected' : '' ?>>
+                                    <?= e($typeOption) ?>
+                                </option>
+                            <?php endforeach; ?>
+                            <?php if ($currentType !== '' && !\Core\ActivityTypes::isValid($currentType)): ?>
+                                <option value="<?= e($currentType) ?>" selected>
+                                    <?= e($currentType) ?> (legacy)
+                                </option>
+                            <?php endif; ?>
+                        </select>
                     </div>
 
                     <div class="mb-3">

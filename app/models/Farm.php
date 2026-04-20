@@ -326,7 +326,16 @@ class Farm extends BaseModel
             $params['city'] = $filters['city'];
         }
 
-        $hasActivityType = !empty($filters['activity_type']);
+        $activityTypes = [];
+        if (!empty($filters['activity_types']) && is_array($filters['activity_types'])) {
+            foreach ($filters['activity_types'] as $t) {
+                $t = trim((string)$t);
+                if ($t !== '') {
+                    $activityTypes[] = $t;
+                }
+            }
+        }
+        $hasActivityType = count($activityTypes) > 0;
         $hasAvailabilityDate = !empty($filters['availability_date']);
         $hasMinPrice = array_key_exists('min_price', $filters) && $filters['min_price'] !== '';
         $hasMaxPrice = array_key_exists('max_price', $filters) && $filters['max_price'] !== '';
@@ -337,8 +346,13 @@ class Farm extends BaseModel
         }
 
         if ($hasActivityType && $needActivityJoin) {
-            $wheres[] = 'a.activity_type = :activity_type';
-            $params['activity_type'] = $filters['activity_type'];
+            $placeholders = [];
+            foreach ($activityTypes as $i => $t) {
+                $key = 'activity_type_' . $i;
+                $placeholders[] = ':' . $key;
+                $params[$key] = $t;
+            }
+            $wheres[] = 'a.activity_type IN (' . implode(',', $placeholders) . ')';
         }
 
         $needScheduleJoin = $hasAvailabilityDate || $hasMinPrice || $hasMaxPrice;

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Controllers;
 
+use Core\ActivityTypes;
 use Core\BaseController;
 use Core\Security;
 use Models\Activity;
@@ -77,6 +78,14 @@ class OwnerActivityController extends BaseController
             return;
         }
 
+        if (!ActivityTypes::isValid($type)) {
+            $this->view('owner/activities/create', [
+                'farm' => $farm,
+                'error' => 'Please choose a valid activity type from the list.',
+            ]);
+            return;
+        }
+
         $activityModel = new Activity();
         $activityModel->create([
             'farm_id' => $farmId,
@@ -127,6 +136,12 @@ class OwnerActivityController extends BaseController
         if (!$activity) {
             http_response_code(404);
             echo 'Activity not found.';
+            return;
+        }
+
+        if (!ActivityTypes::isValid($type) && $type !== (string)$activity['activity_type']) {
+            http_response_code(422);
+            echo 'Please choose a valid activity type from the list.';
             return;
         }
 

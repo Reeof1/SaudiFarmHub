@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Controllers;
 
+use Core\ActivityTypes;
 use Core\BaseController;
 use Core\Cities;
 use Core\Security;
@@ -121,10 +122,22 @@ class FarmController extends BaseController
 
         $name = trim((string)($_POST['name'] ?? ''));
         $city = trim((string)($_POST['city'] ?? ''));
-        $activityType = trim((string)($_POST['activity_type'] ?? ''));
         $availabilityDate = trim((string)($_POST['availability_date'] ?? ''));
         $minPrice = $_POST['min_price'] ?? '';
         $maxPrice = $_POST['max_price'] ?? '';
+
+        $activityTypesRaw = $_POST['activity_types'] ?? [];
+        if (!is_array($activityTypesRaw)) {
+            $activityTypesRaw = [];
+        }
+        $activityTypes = [];
+        foreach ($activityTypesRaw as $t) {
+            $t = trim((string)$t);
+            if ($t !== '' && ActivityTypes::isValid($t)) {
+                $activityTypes[] = $t;
+            }
+        }
+        $activityTypes = array_values(array_unique($activityTypes));
 
         // Ignore any city value that isn't in our fixed list.
         if ($city !== '' && !Cities::isValid($city)) {
@@ -138,7 +151,7 @@ class FarmController extends BaseController
         $filters = [
             'name' => $name,
             'city' => $city,
-            'activity_type' => $activityType,
+            'activity_types' => $activityTypes,
             'availability_date' => $availabilityDate,
             'min_price' => $minPrice,
             'max_price' => $maxPrice,

@@ -32,8 +32,27 @@
             </select>
         </div>
         <div class="col-md-4">
-            <label class="form-label small fh-muted mb-1">Activity type</label>
-            <input type="text" id="search-activity-type" class="form-control" placeholder="e.g. Tour, Workshop">
+            <label class="form-label small fh-muted mb-1">Activity types</label>
+            <div class="dropdown fh-activity-dropdown">
+                <button type="button"
+                        class="form-select text-start d-flex justify-content-between align-items-center"
+                        id="search-activity-toggle"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false">
+                    <span id="search-activity-label" class="fh-muted">All activity types</span>
+                </button>
+                <div class="dropdown-menu p-2 w-100" style="max-height: 260px; overflow-y: auto;">
+                    <?php foreach (\Core\ActivityTypes::LIST as $typeOption): ?>
+                        <label class="dropdown-item d-flex align-items-center gap-2 mb-0">
+                            <input type="checkbox"
+                                   class="form-check-input m-0 fh-activity-check"
+                                   value="<?= e($typeOption) ?>">
+                            <span><?= e($typeOption) ?></span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+            </div>
         </div>
         <div class="col-md-4">
             <label class="form-label small fh-muted mb-1">Availability date</label>
