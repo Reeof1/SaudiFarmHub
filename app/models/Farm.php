@@ -310,11 +310,12 @@ class Farm extends BaseModel
         return $row ?: null;
     }
 
-    public function searchFiltered(array $filters, int $limit, int $offset): array
+    public function searchFiltered(array $filters, int $limit, int $offset, ?float $userLat = null, ?float $userLng = null): array
     {
         $joins = '';
         $wheres = ['f.is_active = 1', 'f.approval_status = \'approved\''];
         $params = [];
+        $sortByDistance = ($userLat !== null && $userLng !== null);
 
         if (!empty($filters['name'])) {
             $wheres[] = 'f.name LIKE :name';
@@ -382,12 +383,31 @@ class Farm extends BaseModel
             $params['max_price'] = (float)$filters['max_price'];
         }
 
-        $sql = 'SELECT DISTINCT f.*, u.name AS owner_name
+        if ($sortByDistance) {
+            $distanceExpr = '(CASE
+                WHEN f.latitude IS NULL OR f.longitude IS NULL THEN NULL
+                ELSE (6371 * ACOS(
+                    COS(RADIANS(:user_lat)) * COS(RADIANS(f.latitude)) *
+                    COS(RADIANS(f.longitude) - RADIANS(:user_lng)) +
+                    SIN(RADIANS(:user_lat2)) * SIN(RADIANS(f.latitude))
+                ))
+            END)';
+            $selectExtra = ', ' . $distanceExpr . ' AS distance_km';
+            $orderBy = 'ORDER BY (distance_km IS NULL) ASC, distance_km ASC, f.created_at DESC';
+            $params['user_lat'] = $userLat;
+            $params['user_lat2'] = $userLat;
+            $params['user_lng'] = $userLng;
+        } else {
+            $selectExtra = '';
+            $orderBy = 'ORDER BY f.created_at DESC';
+        }
+
+        $sql = 'SELECT DISTINCT f.*, u.name AS owner_name' . $selectExtra . '
                 FROM farms f
                 JOIN users u ON f.owner_id = u.id
                 ' . $joins . '
                 WHERE ' . implode(' AND ', $wheres) . '
-                ORDER BY f.created_at DESC
+                ' . $orderBy . '
                 LIMIT :limit OFFSET :offset';
 
         $stmt = $this->db->prepare($sql);

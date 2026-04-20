@@ -148,6 +148,21 @@ class FarmController extends BaseController
         $perPage = 9;
         $offset = ($page - 1) * $perPage;
 
+        $userLatRaw = $_POST['user_lat'] ?? null;
+        $userLngRaw = $_POST['user_lng'] ?? null;
+        $userLat = null;
+        $userLng = null;
+        $sortedByDistance = false;
+        if (is_numeric($userLatRaw) && is_numeric($userLngRaw)) {
+            $lat = (float)$userLatRaw;
+            $lng = (float)$userLngRaw;
+            if ($lat >= -90 && $lat <= 90 && $lng >= -180 && $lng <= 180) {
+                $userLat = $lat;
+                $userLng = $lng;
+                $sortedByDistance = true;
+            }
+        }
+
         $filters = [
             'name' => $name,
             'city' => $city,
@@ -158,16 +173,17 @@ class FarmController extends BaseController
         ];
 
         $farmModel = new Farm();
-        $farms = $farmModel->searchFiltered($filters, $perPage, $offset);
+        $farms = $farmModel->searchFiltered($filters, $perPage, $offset, $userLat, $userLng);
 
         $farmIds = array_map(static fn ($f) => (int)$f['id'], $farms);
         $visitCounts = $farmModel->getVisitCountsByFarmIds($farmIds);
-        foreach ($farms as &$farm) {
-            $farm['visit_count'] = $visitCounts[(int)$farm['id']] ?? 0;
-        }
-        unset($farm);
+        $ratings = $farmModel->getRatingsForFarmIds($farmIds);
 
-        echo json_encode(['success' => true, 'farms' => $farms, 'page' => $page]);
+        ob_start();
+        include dirname(__DIR__) . '/views/farm/_farm_cards.php';
+        $html = ob_get_clean();
+
+        echo json_encode(['success' => true, 'html' => $html, 'page' => $page]);
     }
 
     public function toggleFavorite(): void
