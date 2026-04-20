@@ -23,6 +23,11 @@ $router->get('/visitor/favorites', 'FarmController@favorites');
 $router->post('/review/submit', 'FarmController@submitReview');
 $router->post('/review/delete', 'FarmController@deleteReview');
 
+// Review replies (owner) and moderation (admin)
+$router->post('/review/reply', 'FarmController@ownerReplyReview');
+$router->post('/review/reply-delete', 'FarmController@ownerDeleteReply');
+$router->post('/review/admin-delete', 'FarmController@adminDeleteReview');
+
 // Auth routes
 $router->get('/login', 'AuthController@showLogin');
 $router->post('/login', 'AuthController@login');

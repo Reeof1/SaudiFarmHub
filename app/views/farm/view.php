@@ -159,6 +159,11 @@
     $userReview = $userReview ?? null;
     $isVisitor = !empty($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'visitor';
     $currentUserId = (int)($_SESSION['user']['id'] ?? 0);
+    $currentRole = $_SESSION['user']['role'] ?? '';
+    $isAdmin = $currentRole === 'admin';
+    $isFarmOwner = $currentRole === 'owner'
+        && $currentUserId > 0
+        && (int)($farm['owner_id'] ?? 0) === $currentUserId;
     $reviewError = $_SESSION['review_error'] ?? null;
     unset($_SESSION['review_error']);
 ?>
@@ -198,6 +203,17 @@
                         <div class="small fh-muted">
                             Submitted <?= e(date('Y-m-d', strtotime((string)$userReview['created_at']))) ?>
                         </div>
+                        <?php if (!empty($userReview['owner_reply'])): ?>
+                            <div class="mt-2 p-2 border-start border-3 border-success bg-white rounded">
+                                <div class="small text-success fw-bold mb-1">
+                                    <i class="bi bi-reply-fill"></i> Owner's reply
+                                </div>
+                                <div class="small"><?= nl2br(e((string)$userReview['owner_reply'])) ?></div>
+                                <div class="small fh-muted mt-1">
+                                    <?= e(date('Y-m-d', strtotime((string)$userReview['owner_reply_at']))) ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <form method="POST" action="<?= e(base_url('review/delete')) ?>"
                           onsubmit="return confirm('Delete your review?');">
@@ -274,8 +290,60 @@
                             &middot; <?= e(date('Y-m-d', strtotime((string)$rv['created_at']))) ?>
                         </span>
                     </div>
+                    <?php if ($isAdmin): ?>
+                        <form method="POST" action="<?= e(base_url('review/admin-delete')) ?>"
+                              onsubmit="return confirm('Delete this review permanently?');"
+                              class="d-inline m-0">
+                            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                            <input type="hidden" name="review_id" value="<?= (int)$rv['id'] ?>">
+                            <input type="hidden" name="farm_id" value="<?= (int)$farm['id'] ?>">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
                 <div><?= nl2br(e((string)$rv['comment'])) ?></div>
+
+                <?php if (!empty($rv['owner_reply'])): ?>
+                    <div class="mt-2 p-2 border-start border-3 border-success bg-light rounded">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                            <div>
+                                <div class="small text-success fw-bold mb-1">
+                                    <i class="bi bi-reply-fill"></i> Owner's reply
+                                </div>
+                                <div class="small"><?= nl2br(e((string)$rv['owner_reply'])) ?></div>
+                                <div class="small fh-muted mt-1">
+                                    <?= e(date('Y-m-d', strtotime((string)$rv['owner_reply_at']))) ?>
+                                </div>
+                            </div>
+                            <?php if ($isFarmOwner): ?>
+                                <form method="POST" action="<?= e(base_url('review/reply-delete')) ?>"
+                                      onsubmit="return confirm('Delete your reply?');"
+                                      class="d-inline m-0">
+                                    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                                    <input type="hidden" name="review_id" value="<?= (int)$rv['id'] ?>">
+                                    <input type="hidden" name="farm_id" value="<?= (int)$farm['id'] ?>">
+                                    <button type="submit" class="btn btn-link btn-sm text-danger p-0">
+                                        Delete reply
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php elseif ($isFarmOwner): ?>
+                    <form method="POST" action="<?= e(base_url('review/reply')) ?>" class="mt-2">
+                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="review_id" value="<?= (int)$rv['id'] ?>">
+                        <input type="hidden" name="farm_id" value="<?= (int)$farm['id'] ?>">
+                        <textarea name="reply" rows="2" maxlength="1000" required
+                                  class="form-control form-control-sm"
+                                  placeholder="Write a reply to this review..."></textarea>
+                        <button type="submit" class="btn btn-sm btn-success mt-1">
+                            <i class="bi bi-reply"></i> Reply
+                        </button>
+                    </form>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
     <?php elseif (!$isVisitor || $userReview === null): ?>

@@ -259,5 +259,77 @@ class FarmController extends BaseController
         $farmModel->deleteReview((int)$user['id'], $farmId);
         $this->redirect('farm/view?farm_id=' . $farmId);
     }
+
+    public function ownerReplyReview(): void
+    {
+        Security::requireCsrfToken();
+        $this->requireRole(['owner']);
+        $user = $this->user();
+
+        $farmId   = (int)($_POST['farm_id']   ?? 0);
+        $reviewId = (int)($_POST['review_id'] ?? 0);
+        $reply    = trim((string)($_POST['reply'] ?? ''));
+
+        if ($farmId <= 0 || $reviewId <= 0 || $reply === '') {
+            $_SESSION['review_error'] = 'Please write a reply before submitting.';
+            $this->redirect('farm/view?farm_id=' . $farmId);
+            return;
+        }
+
+        if (mb_strlen($reply) > 1000) {
+            $reply = mb_substr($reply, 0, 1000);
+        }
+
+        $farmModel = new Farm();
+        $ok = $farmModel->addOwnerReply($farmId, $reviewId, (int)$user['id'], $reply);
+        if (!$ok) {
+            $_SESSION['review_error'] = 'Unable to post reply. You may not own this farm.';
+        }
+        $this->redirect('farm/view?farm_id=' . $farmId);
+    }
+
+    public function ownerDeleteReply(): void
+    {
+        Security::requireCsrfToken();
+        $this->requireRole(['owner']);
+        $user = $this->user();
+
+        $farmId   = (int)($_POST['farm_id']   ?? 0);
+        $reviewId = (int)($_POST['review_id'] ?? 0);
+
+        if ($farmId <= 0 || $reviewId <= 0) {
+            http_response_code(422);
+            echo 'farm_id and review_id are required.';
+            return;
+        }
+
+        $farmModel = new Farm();
+        $farmModel->deleteOwnerReply($farmId, $reviewId, (int)$user['id']);
+        $this->redirect('farm/view?farm_id=' . $farmId);
+    }
+
+    public function adminDeleteReview(): void
+    {
+        Security::requireCsrfToken();
+        $this->requireRole(['admin']);
+
+        $reviewId = (int)($_POST['review_id'] ?? 0);
+        $farmId   = (int)($_POST['farm_id']   ?? 0);
+
+        if ($reviewId <= 0) {
+            http_response_code(422);
+            echo 'review_id is required.';
+            return;
+        }
+
+        $farmModel = new Farm();
+        $farmModel->deleteReviewAsAdmin($reviewId);
+
+        if ($farmId > 0) {
+            $this->redirect('farm/view?farm_id=' . $farmId);
+        } else {
+            $this->redirect('farms');
+        }
+    }
 }
 

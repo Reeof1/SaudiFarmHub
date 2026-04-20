@@ -113,6 +113,8 @@ CREATE TABLE IF NOT EXISTS reviews (
   farm_id INT UNSIGNED NOT NULL,
   rating TINYINT UNSIGNED NOT NULL,
   comment TEXT NOT NULL,
+  owner_reply TEXT NULL,
+  owner_reply_at TIMESTAMP NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_review (user_id, farm_id),
   INDEX idx_reviews_farm (farm_id),

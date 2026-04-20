@@ -472,7 +472,7 @@ class Farm extends BaseModel
     public function getUserReview(int $userId, int $farmId): ?array
     {
         $stmt = $this->db->prepare(
-            'SELECT id, user_id, farm_id, rating, comment, created_at
+            'SELECT id, user_id, farm_id, rating, comment, owner_reply, owner_reply_at, created_at
              FROM reviews
              WHERE user_id = :user_id AND farm_id = :farm_id
              LIMIT 1'
@@ -486,6 +486,7 @@ class Farm extends BaseModel
     {
         $stmt = $this->db->prepare(
             'SELECT r.id, r.user_id, r.rating, r.comment, r.created_at,
+                    r.owner_reply, r.owner_reply_at,
                     u.name AS reviewer_name
              FROM reviews r
              JOIN users u ON u.id = r.user_id
@@ -494,6 +495,50 @@ class Farm extends BaseModel
         );
         $stmt->execute(['farm_id' => $farmId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function addOwnerReply(int $farmId, int $reviewId, int $ownerId, string $reply): bool
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE reviews r
+             JOIN farms f ON f.id = r.farm_id
+             SET r.owner_reply = :reply, r.owner_reply_at = CURRENT_TIMESTAMP
+             WHERE r.id = :review_id
+               AND r.farm_id = :farm_id
+               AND f.owner_id = :owner_id'
+        );
+        $stmt->execute([
+            'reply'     => $reply,
+            'review_id' => $reviewId,
+            'farm_id'   => $farmId,
+            'owner_id'  => $ownerId,
+        ]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public function deleteOwnerReply(int $farmId, int $reviewId, int $ownerId): bool
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE reviews r
+             JOIN farms f ON f.id = r.farm_id
+             SET r.owner_reply = NULL, r.owner_reply_at = NULL
+             WHERE r.id = :review_id
+               AND r.farm_id = :farm_id
+               AND f.owner_id = :owner_id'
+        );
+        $stmt->execute([
+            'review_id' => $reviewId,
+            'farm_id'   => $farmId,
+            'owner_id'  => $ownerId,
+        ]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public function deleteReviewAsAdmin(int $reviewId): bool
+    {
+        $stmt = $this->db->prepare('DELETE FROM reviews WHERE id = :id');
+        $stmt->execute(['id' => $reviewId]);
+        return $stmt->rowCount() > 0;
     }
 
     public function getRatingSummary(int $farmId): array
