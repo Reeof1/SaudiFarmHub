@@ -104,17 +104,12 @@
                                     <div class="position-relative">
                                         <img src="<?= e(base_url($img['image_path'])) ?>" alt="Gallery image"
                                              style="width: 90px; height: 90px; object-fit: cover; border-radius: 6px; border: 1px solid #dee2e6;">
-                                        <form method="post" action="<?= e(base_url('owner/farm/image/delete')) ?>"
-                                              class="position-absolute top-0 end-0"
-                                              onsubmit="return confirm('Delete this image?');">
-                                            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-                                            <input type="hidden" name="image_id" value="<?= e((string)$img['id']) ?>">
-                                            <input type="hidden" name="farm_id" value="<?= e((string)$farm['id']) ?>">
-                                            <button type="submit" class="btn btn-danger btn-sm p-1 lh-1"
-                                                    style="border-radius: 50%;" aria-label="Delete image">
-                                                <i class="bi bi-x"></i>
-                                            </button>
-                                        </form>
+                                        <button type="submit"
+                                                form="delete-image-<?= (int)$img['id'] ?>"
+                                                class="btn btn-danger btn-sm p-1 lh-1 position-absolute top-0 end-0"
+                                                style="border-radius: 50%;" aria-label="Delete image">
+                                            <i class="bi bi-x"></i>
+                                        </button>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -141,6 +136,18 @@
         </div>
     </div>
 </div>
+
+<?php if (!empty($gallery)): ?>
+    <?php foreach ($gallery as $img): ?>
+        <form id="delete-image-<?= (int)$img['id'] ?>"
+              method="post" action="<?= e(base_url('owner/farm/image/delete')) ?>"
+              onsubmit="return confirm('Delete this image?');">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+            <input type="hidden" name="image_id" value="<?= e((string)$img['id']) ?>">
+            <input type="hidden" name="farm_id" value="<?= e((string)$farm['id']) ?>">
+        </form>
+    <?php endforeach; ?>
+<?php endif; ?>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>

@@ -93,11 +93,14 @@
 
 <div class="row g-3">
     <div class="col-lg-4">
-        <div class="fh-card-soft p-4 h-100">
+        <div class="fh-card-soft p-4 h-100 d-flex flex-column">
             <h2 class="h6 fw-bold mb-2">About this farm</h2>
-            <p class="fh-muted mb-0">
-                <?= e((string)($farm['description'] ?? '')) ?>
-            </p>
+            <div id="fh-desc-wrap" class="fh-desc-collapsed">
+                <p class="fh-muted mb-0" style="white-space: pre-line;"><?= e((string)($farm['description'] ?? '')) ?></p>
+            </div>
+            <button type="button" id="fh-desc-toggle" class="btn btn-link btn-sm text-success p-0 align-self-start mt-auto">
+                Read more
+            </button>
         </div>
     </div>
     <div class="col-lg-8">
@@ -486,6 +489,18 @@
             } catch (e) {
                 setMessage('Network error while submitting booking.', true);
             }
+        });
+    })();
+
+    (function () {
+        const btn = document.getElementById('fh-desc-toggle');
+        const wrap = document.getElementById('fh-desc-wrap');
+        if (!btn || !wrap) return;
+        btn.addEventListener('click', function () {
+            const collapsed = wrap.classList.contains('fh-desc-collapsed');
+            wrap.classList.toggle('fh-desc-collapsed', !collapsed);
+            wrap.classList.toggle('fh-desc-expanded', collapsed);
+            btn.textContent = collapsed ? 'Read less' : 'Read more';
         });
     })();
 </script>

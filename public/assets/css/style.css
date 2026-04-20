@@ -212,3 +212,13 @@ body {
     font-weight: 600;
 }
 
+.fh-desc-collapsed {
+    max-height: 220px;
+    overflow: hidden;
+}
+
+.fh-desc-expanded {
+    max-height: none;
+    overflow: visible;
+}
+
