@@ -130,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const btn = document.createElement('a');
                         btn.className = 'btn btn-outline-success btn-sm mt-2';
-                        const base = window.FARMHUB?.baseUrl || '';
                         btn.href = `${base}/farm/view?farm_id=${encodeURIComponent(farm.id)}`;
                         btn.textContent = 'View Details & Book';
                         body.appendChild(btn);
