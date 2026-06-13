@@ -1,31 +1,65 @@
-# FarmHub (PHP + MVC + MySQL)
+# FarmHub
 
-This is a starter implementation of **FarmHub** with:
-- MVC structure (controllers/models/views)
-- Auth (register/login/logout) with password hashing + sessions
-- Farm browsing + pagination
-- Owner dashboard + basic farm CRUD pages (create/edit/delete)
+A web application for booking activities at public farms in Saudi Arabia. Farm owners can list their farms and manage schedules, while visitors can browse farms, make reservations, leave reviews, and admins manage users, farms, and system activity.
 
-## Requirements
+=====================================
+
+## Tech Stack
+
 - PHP 8+
 - MySQL / MariaDB
-- Apache with `mod_rewrite` enabled (XAMPP recommended)
+- HTML, CSS, JavaScript (vanilla, no frameworks)
+- PDO for database access
+- Session-based authentication
 
-## Install
-1. Copy the project into your web root (already in `c:\\xampp2\\htdocs\\FarmHub`).
-2. Create the database:
-   - Open phpMyAdmin (or MySQL CLI)
-   - Run: `db/schema.sql` (recommended: drop/recreate the database if you already imported an older version)
-3. Configure DB credentials:
-   - Edit `config/database.php` if you use a DB user/password other than the defaults.
-4. Ensure Apache rewrite is enabled:
-   - The project includes `public/.htaccess` so routes like `/login` work.
-5. Open the app in your browser:
-   - `http://localhost/FarmHub/public/`
+=====================================
 
-## Test quickly
-1. Register a user as role **Farm Owner**.
-2. Go to `Dashboard -> Manage Farms`.
-3. Create a farm.
-4. Log out and browse the farms from the main page.
+## Installation
+
+### 1. Install XAMPP
+
+Install XAMPP with Apache and MySQL
+
+### 2. Download FarmHub
+
+Copy the FarmHub folder to `C:\xampp\htdocs\`
+
+### 3. Create Database
+
+1. Open phpMyAdmin at `http://localhost/phpmyadmin`
+2. Create a new database named `farmhub`
+3. Import the schema from `db/schema.sql`
+
+### 4. Configure Database Connection
+
+Create `config/database.php`:
+```php
+<?php
+declare(strict_types=1);
+
+return [
+    'host' => 'localhost',
+    'dbname' => 'farmhub',
+    'user' => 'root',
+    'password' => 'your_password_here',
+];
+```
+
+### 5. Start Apache and MySQL
+
+Open XAMPP Control Panel, start Apache and MySQL, then visit `http://localhost/FarmHub/public/`
+
+=====================================
+
+## Testing
+
+Tested using Burp Suite Community Edition:
+- CSRF Protection: Verified
+- Session ID Validation: Verified
+- XSS Prevention: Verified
+- SQL Injection Prevention: Verified
+
+=====================================
+
+Built by Reoof Abahussain ★
 

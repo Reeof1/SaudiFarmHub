@@ -63,7 +63,7 @@ class AuthController extends BaseController
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
         $confirm = $_POST['password_confirmation'] ?? '';
-        $role = $_POST['role'] ?? 'visitor';
+        $role = in_array($_POST['role'] ?? '', ['visitor', 'owner']) ? $_POST['role'] : 'visitor';
 
         if ($password !== $confirm) {
             $this->view('auth/register', ['error' => 'Passwords do not match.']);

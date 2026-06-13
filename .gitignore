@@ -1,6 +1,10 @@
 # Environment & credentials
 .env
+config/database.php
 config/database.local.php
+
+# User uploads
+public/assets/uploads/
 
 # OS files
 Thumbs.db

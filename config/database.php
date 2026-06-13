@@ -5,6 +5,6 @@ return [
     'host' => 'localhost',
     'dbname' => 'farmhub',
     'user' => 'root',
-    'password' => '',
+    'password' => 'FarmHub@SecureDB2026!',
 ];
 

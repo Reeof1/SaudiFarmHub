@@ -4,7 +4,7 @@ declare(strict_types=1);
 return [
     'app_name' => 'FarmHub',
     'env' => 'local', // local | production
-    'debug' => true,
+    'debug' => false,
     'base_url' => '', // optional, base_url() helper auto-detects if empty
 ];
 
