@@ -4,6 +4,17 @@ A web application for booking activities at public farms in Saudi Arabia. Farm o
  
 🌐 Live Site: https://saudifarmhub.infinityfreeapp.com 
 
+## Screenshots
+
+### Home Page
+![Home Page](Home.png)
+
+### Browse Farms
+![Browse Farms](Farms.png)
+
+### Register
+![Register](Register.png)
+
 =====================================
 
 ## Tech Stack
